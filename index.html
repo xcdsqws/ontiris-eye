@@ -1,0 +1,174 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>온티리스 눈</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Gowun+Batang:wght@400;700&display=swap">
+<style>
+/* 레이아웃: 한 줄 머리 + 학생 카드 목록(폰 한 열) → 학생 화면은 모델 한 단락 + 날짜별 사진 그리드 */
+:root{
+  --bg:#f6f4ef; --paper:#fffdf9; --ink:#23211d; --ink-2:#6b655b; --line:#e4dfd4;
+  --accent:#2f5d50; --accent-ink:#ffffff; --warn:#b4541e; --warn-bg:#fbeee5; --ok:#2f5d50; --ok-bg:#e6efeb;
+  --display:"Gowun Batang",Georgia,"Apple SD Gothic Neo",serif;
+  --body:"IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#17160f; --paper:#201f17; --ink:#ece7dc; --ink-2:#a39d90; --line:#36342b;
+  --accent:#8fc3b2; --accent-ink:#10201b; --warn:#f0a06e; --warn-bg:#3a271a; --ok:#8fc3b2; --ok-bg:#1f3129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#17160f; --paper:#201f17; --ink:#ece7dc; --ink-2:#a39d90; --line:#36342b;
+  --accent:#8fc3b2; --accent-ink:#10201b; --warn:#f0a06e; --warn-bg:#3a271a; --ok:#8fc3b2; --ok-bg:#1f3129; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;margin:0;
+  padding-block:0 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+a{color:inherit}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);display:flex;align-items:baseline;gap:12px;padding-block:14px 10px;border-bottom:1px solid var(--line);z-index:2}
+.top h1{font-family:var(--display);font-weight:700;font-size:20px;margin:0;letter-spacing:.02em}
+.top .date{color:var(--ink-2);font-size:13px;font-variant-numeric:tabular-nums}
+.top .sp{flex:1}
+.top button{color:var(--ink-2);font-size:13px}
+.wrap{max-width:720px;margin:0 auto}
+.list{display:grid;gap:10px;padding-block:14px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:6px;text-align:left;width:100%}
+.card .row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.card .who{font-weight:600;font-size:16px}
+.card .meta{color:var(--ink-2);font-size:13px}
+.card .gap{font-size:14px;line-height:1.5;min-width:0}
+.pill{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;background:var(--ok-bg);color:var(--ok);font-variant-numeric:tabular-nums}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.quiet{background:transparent;border:1px solid var(--line);color:var(--ink-2)}
+.empty{color:var(--ink-2);padding-block:40px;text-align:center}
+.key{display:grid;gap:10px;max-width:420px;margin:48px auto}
+.key p{margin:0;color:var(--ink-2);font-size:14px}
+.key input{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);width:100%}
+.btn{background:var(--accent);color:var(--accent-ink);padding:10px 14px;border-radius:8px;font-weight:600}
+.back{color:var(--ink-2);font-size:14px;padding-block:12px 0}
+.head{display:grid;gap:4px;padding-block:8px 14px}
+.head h2{font-family:var(--display);font-size:24px;margin:0;font-weight:700}
+.head .meta{color:var(--ink-2);font-size:13px}
+.sec{padding-block:10px 18px;border-top:1px solid var(--line)}
+.sec h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px;font-weight:600}
+.model{display:grid;gap:10px}
+.model .k{font-size:12px;color:var(--ink-2)}
+.model .v{white-space:pre-wrap;word-break:break-word;font-size:14px}
+.day{display:grid;gap:8px;padding-block:6px 14px}
+.day .d{font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.grid a{display:block;aspect-ratio:3/4;max-width:100%;overflow:hidden;border-radius:6px;background:var(--line)}
+.grid img{width:100%;height:100%;object-fit:cover;display:block}
+.grid .pending{display:grid;place-items:center;font-size:12px;color:var(--ink-2)}
+.msgs{display:grid;gap:8px}
+.msg{font-size:14px;white-space:pre-wrap;word-break:break-word;padding:8px 10px;border-radius:8px;background:var(--paper);border:1px solid var(--line)}
+.msg.agent{border-color:transparent;background:var(--ok-bg)}
+.msg .t{display:block;font-size:11px;color:var(--ink-2);margin-bottom:2px;font-variant-numeric:tabular-nums}
+table{border-collapse:collapse;width:100%;font-size:13px}
+td,th{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--ink-2);font-weight:500;font-size:12px}
+.tbl{overflow-x:auto}
+.err{color:var(--warn);font-size:14px;padding-block:20px}
+@media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}.card:hover{border-color:var(--accent)}}
+</style></head><body>
+<div class="wrap">
+  <header class="top">
+    <h1>온티리스 눈</h1>
+    <span class="date" id="today"></span>
+    <span class="sp"></span>
+    <button id="refresh" type="button">새로 고침</button>
+    <button id="logout" type="button" hidden>열쇠 지우기</button>
+  </header>
+  <main id="main"></main>
+</div>
+
+<script>
+const API = "https://ippyzlrprvmvuimlrbqw.supabase.co/functions/v1/eye";
+const $ = (s) => document.querySelector(s);
+const main = $("#main");
+let key = "";
+try { key = localStorage.getItem("eye_key") || ""; } catch (_) {}
+let view = { name: "home" };
+
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const kst = (iso) => new Date(new Date(iso).getTime() + 9 * 3600e3);
+const hm = (iso) => kst(iso).toISOString().slice(11, 16);
+const md = (iso) => { const d = kst(iso); return `${d.getUTCMonth() + 1}/${d.getUTCDate()}`; };
+const dayLabel = (ymd) => { const [y, m, d] = ymd.split("-").map(Number); const w = "일월화수목금토"[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]; return `${m}월 ${d}일 (${w})`; };
+
+async function call(params) {
+  const u = new URL(API); Object.entries({ ...params, k: key }).forEach(([k, v]) => u.searchParams.set(k, v));
+  const r = await fetch(u);
+  if (r.status === 401) throw new Error("auth");
+  if (!r.ok) throw new Error("서버 " + r.status);
+  return r.json();
+}
+
+function askKey(msg) {
+  $("#logout").hidden = true;
+  main.innerHTML = `<form class="key" id="keyform">
+    <p>${esc(msg || "처음 한 번만 열쇠를 넣어 둬. 이 폰에만 저장돼.")}</p>
+    <input id="keyin" type="password" placeholder="열쇠" autocomplete="off" autocapitalize="off">
+    <button class="btn" type="submit">열기</button></form>`;
+  $("#keyform").addEventListener("submit", (e) => { e.preventDefault(); key = $("#keyin").value.trim(); try { localStorage.setItem("eye_key", key); } catch (_) {} go({ name: "home" }); });
+}
+
+function silentPill(s) {
+  if (s.photos.today > 0) return `<span class="pill">오늘 ${s.photos.today}장</span>`;
+  if (s.days_silent == null) return "";
+  if (s.days_silent >= 5) return `<span class="pill warn">${s.days_silent}일째 없음</span>`;
+  if (s.days_silent >= 2) return `<span class="pill quiet">${s.days_silent}일 전</span>`;
+  return `<span class="pill quiet">어제</span>`;
+}
+
+async function home() {
+  main.innerHTML = `<div class="empty">보는 중…</div>`;
+  const d = await call({ view: "home" });
+  $("#today").textContent = d.today.replace(/-/g, ".");
+  $("#logout").hidden = false;
+  const order = (s) => (s.photos.today > 0 ? 0 : 1) * 1000 + (s.days_silent ?? 0);
+  const items = d.students.sort((a, b) => order(a) - order(b)).map((s) => `
+    <button class="card" type="button" data-u="${esc(s.user_key)}">
+      <div class="row"><span class="who">${esc(s.alias)}</span><span class="meta">${esc(s.grade || "")} · ${esc(s.subjects || "")}</span><span class="sp" style="flex:1"></span>${silentPill(s)}${s.photos.failed ? `<span class="pill warn">저장 실패 ${s.photos.failed}</span>` : ""}</div>
+      ${s.model?.current_gap ? `<div class="gap"><span class="meta">넘을 곳</span> ${esc(s.model.current_gap)}</div>` : `<div class="gap meta">아직 모델 없음</div>`}
+      ${s.model?.upcoming ? `<div class="gap"><span class="meta">다음</span> ${esc(s.model.upcoming)}</div>` : ""}
+      ${s.last_record ? `<div class="meta">마지막 자리 ${esc(s.last_record.on_date)} · ${esc(s.last_record.subject)} · ${esc(s.last_record.verdict || "")}</div>` : ""}
+    </button>`).join("");
+  main.innerHTML = `<div class="list">${items || `<div class="empty">아직 별칭이 붙은 학생이 없어.</div>`}</div>`;
+  main.querySelectorAll(".card").forEach((b) => b.addEventListener("click", () => go({ name: "student", u: b.dataset.u })));
+}
+
+async function student(u, days = 14) {
+  main.innerHTML = `<div class="empty">보는 중…</div>`;
+  const d = await call({ view: "student", u, days });
+  const m = d.member, mo = d.model || {};
+  const byDay = {};
+  d.photos.forEach((p) => (byDay[p.day] ??= []).push(p));
+  const days_html = Object.keys(byDay).sort().reverse().map((day) => `
+    <div class="day"><div class="d">${dayLabel(day)} · ${byDay[day].length}장</div>
+      <div class="grid">${byDay[day].sort((a, b) => a.seq - b.seq || a.idx - b.idx).map((p) => p.thumb
+        ? `<a href="${esc(p.url)}" target="_blank" rel="noopener"><img loading="lazy" src="${esc(p.thumb)}" alt="${esc(m.alias)} ${day} ${p.seq}-${p.idx}"></a>`
+        : `<a class="pending" href="#">${p.status === "failed" ? "저장 실패" : "처리 중"}</a>`).join("")}</div></div>`).join("");
+  const model_html = ["current_gap:넘을 한 곳", "how_solving:푸는 방식", "next_risk:다음에 걸릴 것", "upcoming:앞에 있는 것"].map((kv) => { const [k, l] = kv.split(":"); return mo[k] ? `<div><div class="k">${l}${k === "current_gap" && mo.gap_since ? ` · ${esc(mo.gap_since)}부터 · ${mo.gap_hits ?? 0}번 걸림` : ""}</div><div class="v">${esc(mo[k])}</div></div>` : ""; }).join("");
+  const msgs_html = d.messages.slice(0, 40).map((x) => `<div class="msg ${x.kind === "agent" ? "agent" : ""}"><span class="t">${md(x.sent_at)} ${hm(x.sent_at)}${x.kind === "agent" ? " · 나" : ""}</span>${esc(x.text)}</div>`).join("");
+  const recs_html = d.records.length ? `<div class="tbl"><table><tr><th>날짜</th><th>과목</th><th>넘으려던 것</th><th>판정</th><th>분</th></tr>${d.records.map((r) => `<tr><td>${esc(r.on_date)}</td><td>${esc(r.subject)}</td><td>${esc(r.target)}</td><td>${esc(r.verdict || "")}</td><td>${esc(r.minutes ?? "")}</td></tr>`).join("")}</table></div>` : `<div class="meta">아직 기록 없음</div>`;
+  main.innerHTML = `
+    <button class="back" type="button" id="back">← 전체</button>
+    <div class="head"><h2>${esc(m.alias)}</h2><div class="meta">${esc(m.grade || "")} · ${esc(m.subjects || "")} · ${esc(m.status)}${m.note ? ` · ${esc(m.note)}` : ""}</div></div>
+    ${model_html ? `<section class="sec"><h3>모델</h3><div class="model">${model_html}</div></section>` : ""}
+    <section class="sec"><h3>들어온 사진 · 최근 ${d.days}일 · ${d.photos.length}장 <button type="button" id="more" style="color:var(--accent);margin-left:8px">${d.days < 90 ? "더 보기" : ""}</button></h3>${days_html || `<div class="meta">없음</div>`}</section>
+    <section class="sec"><h3>글</h3><div class="msgs">${msgs_html || `<div class="meta">없음</div>`}</div></section>
+    <section class="sec"><h3>자리 기록</h3>${recs_html}</section>`;
+  $("#back").addEventListener("click", () => go({ name: "home" }));
+  $("#more")?.addEventListener("click", () => go({ name: "student", u, days: Math.min(90, days * 3) }));
+  window.scrollTo(0, 0);
+}
+
+async function go(v) {
+  view = v;
+  if (!key) return askKey();
+  try { v.name === "student" ? await student(v.u, v.days) : await home(); }
+  catch (e) {
+    if (String(e.message) === "auth") { key = ""; try { localStorage.removeItem("eye_key"); } catch (_) {} return askKey("열쇠가 안 맞아. 다시 넣어 줘."); }
+    main.innerHTML = `<div class="err">못 불러왔어: ${esc(e.message)}</div>`;
+  }
+}
+$("#refresh").addEventListener("click", () => go(view));
+$("#logout").addEventListener("click", () => { key = ""; try { localStorage.removeItem("eye_key"); } catch (_) {} askKey(); });
+go({ name: "home" });
+</script>
+</body></html>
