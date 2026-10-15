@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>ONTIRIS 약속 한 장</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  body {
+    font-family: "Noto Sans CJK KR", "Noto Sans KR", sans-serif;
+    color: #1a1a1a;
+    width: 210mm; min-height: 297mm;
+    padding: 20mm 20mm 16mm 20mm;
+    font-size: 10.6pt; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .head { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 6mm; margin-bottom: 7mm; }
+  .brand { font-size: 15pt; letter-spacing: .22em; font-weight: 500; }
+  .brand .o { display:inline-block; width: 10pt; height: 10pt; border: 1.4pt solid #1a1a1a; border-radius: 50%; vertical-align: -1pt; margin-right: 7pt; }
+  .title { font-size: 10pt; color: #555; letter-spacing: .08em; }
+  .lead { font-size: 12.5pt; line-height: 1.7; margin: 0 0 8mm 0; }
+  .lead b { font-weight: 500; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10mm; }
+  h2 { font-size: 9pt; font-weight: 500; letter-spacing: .14em; color: #666; margin: 0 0 2.4mm 0; padding-top: 1.5mm; border-top: 1px solid #ddd; }
+  ul { list-style: none; margin: 0 0 6mm 0; padding: 0; }
+  li { position: relative; padding-left: 4.2mm; margin: 0 0 1.8mm 0; }
+  li::before { content: ""; position: absolute; left: 0; top: .62em; width: 3.6pt; height: 3.6pt; border-radius: 50%; background: #1a1a1a; }
+  .no li::before { background: #fff; border: 1pt solid #1a1a1a; width: 3.2pt; height: 3.2pt; }
+  .price { display:flex; align-items: baseline; gap: 6mm; margin: 0 0 2.5mm 0; }
+  .price .n { font-size: 18pt; font-weight: 500; letter-spacing: -.01em; }
+  .price .u { color: #555; }
+  .acct { font-family: inherit; }
+  .acct .blank { display:inline-block; min-width: 46mm; border-bottom: 1px solid #1a1a1a; height: 1em; vertical-align: -2pt; margin-left: 2pt; }
+  .consent { margin-top: 2mm; padding: 4.5mm 5mm; border: 1px solid #1a1a1a; }
+  .consent p { margin: 0 0 1.5mm 0; }
+  .consent .ask { font-weight: 500; margin-top: 2.5mm; margin-bottom: 0; }
+  .foot { margin-top: 7mm; padding-top: 3mm; border-top: 1px solid #ddd; font-size: 9pt; color: #555; display:flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+  <div class="head">
+    <div class="brand"><span class="o"></span>ONTIRIS</div>
+    <div class="title">약속 한 장</div>
+  </div>
+
+  <p class="lead">한 학생에 눈 하나를 둡니다.<br><b>가르치는 자리가 아니라, 보는 자리입니다.</b></p>
+
+  <div class="grid">
+    <div>
+      <h2>학생이 하는 것</h2>
+      <ul>
+        <li><b>시작할 때</b> 최근 시험지 한 세트(푼 흔적·채점 그대로), 왜 틀렸는지 모르겠는 문제 1~3개.</li>
+        <li><b>매일</b> 그날 학습한 내용이나 막힌 부분을 사진 또는 짧은 메시지로. 정리할 필요 없습니다. 공부 못 한 날은 그 사실만 한 줄.</li>
+        <li><b>매주</b> 20분 화상 자리. 요일·시간은 시작할 때 고정합니다.</li>
+      </ul>
+
+      <h2>하지 않는 것</h2>
+      <ul class="no">
+        <li>강의</li>
+        <li>문제·교재·자료 제작</li>
+        <li>숙제 일괄 부과</li>
+        <li>성적 보장</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2>ONTIRIS가 하는 것</h2>
+      <ul>
+        <li>보내는 것은 전부 읽히고, 한 번 읽힌 것은 사라지지 않습니다.</li>
+        <li><b>막힌 문제</b>는 주말을 포함해 다음 날 오전 10시까지 답합니다. 풀이를 대신 써 주지 않고, 어디서 막혔는지와 교재·강의의 어느 부분을 보면 되는지를 말합니다.</li>
+        <li><b>2주 안에 첫 장</b> — 지금 어떻게 풀고 있는지, 지금 넘을 한 곳, 넘었다고 볼 기준.</li>
+        <li><b>매주 20분</b> — 처음 보는 문제 하나를 앞에서 풀게 하고 봅니다. 기록 한 줄이 남습니다.</li>
+        <li><b>매달 한 장</b> — 다음 달 가장 위험한 자리 하나, 그리고 달라졌는지·그대로인지·아직 모르는지. 학생과 보호자께 함께 보냅니다.</li>
+        <li>닷새 비면 먼저 묻습니다. 같은 자리에서 세 번 걸리면 먼저 말합니다. 시험 전후와 선택 앞에서는 전화합니다.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>비용</h2>
+  <div class="price"><span class="n">월 500,000원</span><span class="u">한 학생 · 한 달 단위 · 시작 전 입금</span></div>
+  <ul>
+    <li class="acct">계좌 <span class="blank"></span> &nbsp; 입금일이 한 달의 기준일입니다.</li>
+    <li>다음 달은 자동으로 이어지지 않습니다. 매달 한 장을 보시고 이어갈지 정하시면 됩니다. 그만두실 때는 메시지 한 줄이면 됩니다.</li>
+    <li>중도 중단 시 환불 — 시작 전 전액 · 1/3 경과 전 2/3 · 1/2 경과 전 절반 · 그 이후 없음.</li>
+  </ul>
+
+  <div class="consent">
+    <p>보내주신 사진과 기록은 제가 직접 보고, 빠뜨리지 않기 위해 AI 도구를 함께 씁니다. 이름은 저장하지 않으며 외부에 공개되지 않습니다. 화상 자리는 기록을 위해 녹취될 수 있습니다.</p>
+    <p class="ask">이 내용으로 시작하시려면 보호자께서 "네"로 답해 주세요.</p>
+  </div>
+
+  <div class="foot">
+    <span>서울대학교 경제학부 이준석 · 국어·영어·수학 지도 6년</span>
+    <span>ONTIRIS</span>
+  </div>
+</body>
+</html>
