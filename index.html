@@ -166,10 +166,9 @@ async function post(body) {
 function stripHtml(t, clickable) {
   if (!t) return "";
   const under = t.sent < 20;
-  const v = Object.entries(t.by_variant || {}).map(([k, n]) => `${esc(k)} ${n}`).join(" · ");
   return `<${clickable ? 'button type="button" id="strip"' : "div"} class="strip ${under ? "under" : ""}">
     <span class="lead">지난 7일</span>
-    <span><b class="sent">${t.sent}</b>/20 제안${v ? ` (${v})` : ""}</span>
+    <span><b class="sent">${t.sent}</b>/20 제안${t.inbound ? ` · 들어온 문의 ${t.inbound}` : ""}</span>
     <span><b>${t.replied}</b>답장</span><span><b>${t.called}</b>상담</span><span><b>${t.demo}</b>체험</span><span><b>${t.paid}</b>결제</span>
     <span>· 누적 결제 <b>${t.paid_all}</b>/2 (11/15)</span></${clickable ? "button" : "div"}>`;
 }
