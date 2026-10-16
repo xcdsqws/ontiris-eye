@@ -96,6 +96,29 @@ details[open] summary{margin-bottom:8px}
 .grid a{position:relative}
 .grid .ob{position:absolute;right:4px;bottom:4px;font-size:10.5px;padding:1px 6px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff}
 .grid .ob.err{background:var(--warn);color:#fff}
+/* 숫자 줄 · 새 방 · 장부 */
+.strip{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-top:14px;font-size:13px;color:var(--ink-2);text-align:left;width:100%}
+.strip b{color:var(--ink);font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;margin-right:2px}
+.strip .lead{color:var(--ink);font-weight:600}
+.strip.under b.sent{color:var(--warn)}
+.h3x{font-size:12px;letter-spacing:.08em;color:var(--ink-2);margin:18px 0 8px;font-weight:600}
+.room{background:var(--paper);border:1px dashed var(--warn);border-radius:10px;padding:12px 14px;display:grid;gap:8px}
+.room .t{font-size:13.5px;word-break:break-word}
+.f{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px}
+.f input,.f select,.f textarea{font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;min-width:0}
+.f textarea{grid-column:1/-1;min-height:2.6em;resize:vertical}
+.f .wide{grid-column:1/-1}
+.btn.sm{padding:8px 12px;font-size:14px}
+.msgline{font-size:13px;color:var(--ink-2);min-height:1.2em}
+.msgline.bad{color:var(--warn)}
+.lg{display:grid;gap:8px;padding-block:6px 14px}
+.lgr{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:6px;min-width:0}
+.lgr .top2{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:14px}
+.lgr .top2 .w{font-weight:600}
+.lgr .pb{font-size:13px;color:var(--ink-2);word-break:break-word}
+.steps{display:flex;flex-wrap:wrap;gap:6px}
+.step{font-size:12.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2);font-variant-numeric:tabular-nums}
+.step.on{background:var(--ok-bg);color:var(--ok);border-color:transparent}
 @media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}.card:hover{border-color:var(--accent)}}
 </style></head><body>
 <div class="wrap">
@@ -103,6 +126,7 @@ details[open] summary{margin-bottom:8px}
     <h1>온티리스 눈</h1>
     <span class="date" id="today"></span>
     <span class="sp"></span>
+    <button id="ledgerbtn" type="button">장부</button>
     <button id="refresh" type="button">새로 고침</button>
     <button id="logout" type="button" hidden>열쇠 지우기</button>
   </header>
@@ -129,6 +153,102 @@ async function call(params) {
   if (r.status === 401) throw new Error("auth");
   if (!r.ok) throw new Error("서버 " + r.status);
   return r.json();
+}
+
+async function post(body) {
+  const r = await fetch(API, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...body, k: key }) });
+  const j = await r.json().catch(() => ({}));
+  if (r.status === 401) throw new Error("auth");
+  if (!r.ok) throw new Error(j.error || ("서버 " + r.status));
+  return j;
+}
+
+function stripHtml(t, clickable) {
+  if (!t) return "";
+  const under = t.sent < 20;
+  const v = Object.entries(t.by_variant || {}).map(([k, n]) => `${esc(k)} ${n}`).join(" · ");
+  return `<${clickable ? 'button type="button" id="strip"' : "div"} class="strip ${under ? "under" : ""}">
+    <span class="lead">지난 7일</span>
+    <span><b class="sent">${t.sent}</b>/20 제안${v ? ` (${v})` : ""}</span>
+    <span><b>${t.replied}</b>답장</span><span><b>${t.called}</b>상담</span><span><b>${t.demo}</b>체험</span><span><b>${t.paid}</b>결제</span>
+    <span>· 누적 결제 <b>${t.paid_all}</b>/2 (11/15)</span></${clickable ? "button" : "div"}>`;
+}
+
+const STATUS_KO = { trial: "체험", member: "회원", contact: "상담 전", left: "끝남" };
+function roomsHtml(rooms) {
+  if (!rooms?.length) return "";
+  return `<div class="h3x">새 방 ${rooms.length} — 누군지 정해 줘 (실명 말고 별칭)</div><div class="list" style="padding-block:0">${rooms.map((r) => `
+    <form class="room" data-u="${esc(r.user_key)}">
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;align-items:baseline"><span class="who" style="font-weight:600">새 방 ${esc(r.user_key.slice(0, 4))}</span>
+        <span class="meta">글 ${r.messages} · 사진 ${r.photos} · ${md(r.first_seen)} 처음 · ${md(r.last_seen)} ${hm(r.last_seen)} 마지막</span>
+        <button type="button" class="meta peek" style="margin-left:auto;color:var(--accent)">보기 →</button></div>
+      ${r.texts.length ? `<div class="t">${r.texts.map((t) => "“" + esc(t) + "”").join("<br>")}</div>` : ""}
+      <div class="f">
+        <input name="alias" placeholder="별칭 (예: SY)" maxlength="20" required autocomplete="off">
+        <input name="grade" placeholder="학년 (예: 고2)" maxlength="20" autocomplete="off">
+        <input name="subjects" placeholder="과목 (예: 수학·영어)" maxlength="40" autocomplete="off">
+        <select name="status"><option value="trial">체험</option><option value="member">회원(기존 수업)</option><option value="contact">상담 전</option></select>
+        <button class="btn sm wide" type="submit">등록</button>
+      </div><div class="msgline"></div></form>`).join("")}</div>`;
+}
+function bindRooms() {
+  main.querySelectorAll("form.room").forEach((f) => {
+    f.querySelector(".peek")?.addEventListener("click", () => go({ name: "student", u: f.dataset.u }));
+    f.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(f), line = f.querySelector(".msgline");
+      line.className = "msgline"; line.textContent = "저장 중…";
+      try { await post({ action: "register", u: f.dataset.u, alias: fd.get("alias"), grade: fd.get("grade"), subjects: fd.get("subjects"), status: fd.get("status") }); go({ name: "home" }); }
+      catch (err) { if (String(err.message) === "auth") return go({ name: "home" }); line.className = "msgline bad"; line.textContent = "안 됐어: " + err.message; }
+    });
+  });
+}
+
+const STEP_KO = [["replied_at", "답장"], ["called_at", "상담"], ["demo_at", "체험"], ["paid_at", "결제"]];
+async function ledgerView() {
+  main.innerHTML = `<div class="empty">보는 중…</div>`;
+  const d = await call({ view: "ledger" });
+  $("#today").textContent = d.today.replace(/-/g, ".");
+  $("#logout").hidden = false;
+  const rows = d.rows.map((r) => `
+    <div class="lgr" data-id="${r.id}">
+      <div class="top2"><span class="meta">${esc(r.sent_on.slice(5).replace("-", "/"))}</span><span class="w">${esc(r.who)}</span><span class="meta">${esc([r.grade, r.platform, r.variant].filter(Boolean).join(" · "))}</span></div>
+      ${r.stated_problem ? `<div class="pb">“${esc(r.stated_problem)}”</div>` : ""}
+      <div class="steps">${STEP_KO.map(([f, l]) => `<button type="button" class="step ${r[f] ? "on" : ""}" data-f="${f}" data-on="${r[f] ? "clear" : "today"}">${l}${r[f] ? " " + esc(r[f].slice(5).replace("-", "/")) : ""}</button>`).join("")}</div>
+      ${r.objection || r.post_note ? `<div class="pb">${esc([r.objection && "반론: " + r.objection, r.post_note].filter(Boolean).join(" · "))}</div>` : ""}
+    </div>`).join("");
+  main.innerHTML = `
+    <button class="back" type="button" id="back">← 전체</button>
+    ${stripHtml(d.tally, false)}
+    <div class="h3x">제안 한 통 보냈으면 여기 한 줄</div>
+    <form id="oform" class="lgr">
+      <div class="f">
+        <input name="who" placeholder="누구 (실명 X · 예: 고2 학부모)" maxlength="40" required autocomplete="off" class="wide">
+        <input name="grade" placeholder="학년" maxlength="20" autocomplete="off">
+        <select name="variant"><option>D</option><option>C</option><option>기타</option></select>
+        <select name="platform"><option>김과외</option><option>소개</option><option>기타</option></select>
+        <textarea name="stated_problem" placeholder="상대가 쓴 고민 한 줄 (그대로)" maxlength="200"></textarea>
+        <button class="btn sm wide" type="submit">보냄 기록</button>
+      </div><div class="msgline"></div>
+    </form>
+    <div class="h3x">최근 60일 · ${d.rows.length}통 — 답장·상담·체험·결제가 생기면 눌러 (다시 누르면 지움)</div>
+    <div class="lg">${rows || `<div class="meta">아직 없음</div>`}</div>`;
+  $("#back").addEventListener("click", () => go({ name: "home" }));
+  const f = $("#oform");
+  f.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(f), line = f.querySelector(".msgline");
+    line.className = "msgline"; line.textContent = "저장 중…";
+    try { await post({ action: "outreach_add", who: fd.get("who"), grade: fd.get("grade"), variant: fd.get("variant"), platform: fd.get("platform"), stated_problem: fd.get("stated_problem") }); go({ name: "ledger" }); }
+    catch (err) { if (String(err.message) === "auth") return go({ name: "ledger" }); line.className = "msgline bad"; line.textContent = "안 됐어: " + err.message; }
+  });
+  main.querySelectorAll(".lgr[data-id] .step").forEach((b) => b.addEventListener("click", async () => {
+    const id = Number(b.closest(".lgr").dataset.id);
+    b.disabled = true;
+    try { await post({ action: "outreach_mark", id, field: b.dataset.f, on: b.dataset.on }); go({ name: "ledger" }); }
+    catch (err) { b.disabled = false; b.textContent = "안 됨"; }
+  }));
+  window.scrollTo(0, 0);
 }
 
 function askKey(msg) {
@@ -224,8 +344,10 @@ async function home() {
       ${s.last_record ? `<div class="meta">마지막 자리 ${esc(s.last_record.on_date)} · ${esc(s.last_record.subject)} · ${esc(s.last_record.verdict || "")}</div>` : ""}
     </button>`).join("");
   const banner = d.observe?.last_error ? `<div class="banner">사진 읽기가 막혀 있어: ${esc(d.observe.last_error)}</div>` : "";
-  main.innerHTML = `${banner}<div class="list">${items || `<div class="empty">아직 별칭이 붙은 학생이 없어.</div>`}</div>`;
+  main.innerHTML = `${banner}${stripHtml(d.tally, true)}${roomsHtml(d.new_rooms)}<div class="list">${items || `<div class="empty">아직 별칭이 붙은 학생이 없어.</div>`}</div>`;
   main.querySelectorAll(".card").forEach((b) => b.addEventListener("click", () => go({ name: "student", u: b.dataset.u })));
+  $("#strip")?.addEventListener("click", () => go({ name: "ledger" }));
+  bindRooms();
 }
 
 async function student(u, days = 14) {
@@ -244,7 +366,7 @@ async function student(u, days = 14) {
   const recs_html = d.records.length ? `<div class="tbl"><table><tr><th>날짜</th><th>과목</th><th>넘으려던 것</th><th>판정</th><th>분</th></tr>${d.records.map((r) => `<tr><td>${esc(r.on_date)}</td><td>${esc(r.subject)}</td><td>${esc(r.target)}</td><td>${esc(r.verdict || "")}</td><td>${esc(r.minutes ?? "")}</td></tr>`).join("")}</table></div>` : `<div class="meta">아직 기록 없음</div>`;
   main.innerHTML = `
     <button class="back" type="button" id="back">← 전체</button>
-    <div class="head"><h2>${esc(m.alias)}</h2><div class="meta">${esc(m.grade || "")} · ${esc(m.subjects || "")} · ${esc(m.status)}${m.note ? ` · ${esc(m.note)}` : ""}</div></div>
+    <div class="head"><h2>${esc(m.alias || ("새 방 " + m.user_key.slice(0, 4)))}</h2><div class="meta">${esc(m.grade || "")} · ${esc(m.subjects || "")} · ${esc(m.status)}${m.note ? ` · ${esc(m.note)}` : ""}</div></div>
     ${model_html ? `<section class="sec"><h3>모델</h3><div class="model">${model_html}</div></section>` : ""}
     <section class="sec"><h3>짐작<span class="n">${d.hypotheses.filter((h) => h.status === "지금" || h.status === "후보").length}개 살아 있음</span></h3>${hypsHtml(d.hypotheses)}</section>
     <section class="sec"><h3>예측</h3>${predsHtml(d.predictions)}</section>
@@ -260,13 +382,14 @@ async function student(u, days = 14) {
 async function go(v) {
   view = v;
   if (!key) return askKey();
-  try { v.name === "student" ? await student(v.u, v.days) : await home(); }
+  try { v.name === "student" ? await student(v.u, v.days) : v.name === "ledger" ? await ledgerView() : await home(); }
   catch (e) {
     if (String(e.message) === "auth") { key = ""; try { localStorage.removeItem("eye_key"); } catch (_) {} return askKey("열쇠가 안 맞아. 다시 넣어 줘."); }
     main.innerHTML = `<div class="err">못 불러왔어: ${esc(e.message)}</div>`;
   }
 }
 $("#refresh").addEventListener("click", () => go(view));
+$("#ledgerbtn").addEventListener("click", () => go({ name: "ledger" }));
 $("#logout").addEventListener("click", () => { key = ""; try { localStorage.removeItem("eye_key"); } catch (_) {} askKey(); });
 go({ name: "home" });
 </script>
