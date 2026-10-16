@@ -12,31 +12,35 @@
     font-family: "Noto Sans CJK KR", "Noto Sans KR", sans-serif;
     color: #1a1a1a;
     width: 210mm; height: 297mm;
-    padding: 16mm 18mm 12mm 18mm;
-    font-size: 10.2pt; line-height: 1.55;
+    padding: 15mm 18mm 11mm 18mm;
+    font-size: 9.9pt; line-height: 1.55;
     -webkit-font-smoothing: antialiased;
+    display: flex; flex-direction: column;
   }
-  .head { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 6mm; margin-bottom: 7mm; }
+  .head { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 5.5mm; margin-bottom: 6mm; }
   .brand { font-size: 15pt; letter-spacing: .22em; font-weight: 500; }
   .brand .o { display:inline-block; width: 10pt; height: 10pt; border: 1.4pt solid #1a1a1a; border-radius: 50%; vertical-align: -1pt; margin-right: 7pt; }
   .title { font-size: 10pt; color: #555; letter-spacing: .08em; }
-  .lead { font-size: 12pt; line-height: 1.65; margin: 0 0 6mm 0; }
+  .lead { font-size: 11.6pt; line-height: 1.7; margin: 0 0 5.5mm 0; }
   .lead b { font-weight: 500; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10mm; }
+  .grid { display: grid; grid-template-columns: 1.08fr 1fr; gap: 0 9mm; }
   h2 { font-size: 9pt; font-weight: 500; letter-spacing: .14em; color: #666; margin: 0 0 2.4mm 0; padding-top: 1.5mm; border-top: 1px solid #ddd; }
-  ul { list-style: none; margin: 0 0 6mm 0; padding: 0; }
-  li { position: relative; padding-left: 4.2mm; margin: 0 0 1.8mm 0; }
+  ul { list-style: none; margin: 0 0 5mm 0; padding: 0; }
+  li { position: relative; padding-left: 4.2mm; margin: 0 0 1.7mm 0; }
   li::before { content: ""; position: absolute; left: 0; top: .62em; width: 3.6pt; height: 3.6pt; border-radius: 50%; background: #1a1a1a; }
   .no li::before { background: #fff; border: 1pt solid #1a1a1a; width: 3.2pt; height: 3.2pt; }
-  .price { display:flex; align-items: baseline; gap: 6mm; margin: 0 0 2.5mm 0; }
-  .price .n { font-size: 18pt; font-weight: 500; letter-spacing: -.01em; }
-  .price .u { color: #555; }
-  .acct { font-family: inherit; }
-  .acct .blank { display:inline-block; min-width: 46mm; border-bottom: 1px solid #1a1a1a; height: 1em; vertical-align: -2pt; margin-left: 2pt; }
-  .consent { margin-top: 2mm; padding: 4.5mm 5mm; border: 1px solid #1a1a1a; }
+  .price { display:flex; align-items: baseline; flex-wrap: wrap; gap: 2mm 5mm; margin: 0 0 2.5mm 0; }
+  .price .n { font-size: 16pt; font-weight: 500; letter-spacing: -.01em; }
+  .price .n small { font-size: 9.5pt; font-weight: 400; color: #555; margin-right: 2mm; letter-spacing: .02em; }
+  .price .arrow { color: #999; font-size: 12pt; }
+  .price .u { color: #555; flex-basis: 100%; }
+  .blank { display:inline-block; min-width: 46mm; border-bottom: 1px solid #1a1a1a; height: 1em; vertical-align: -2pt; margin-left: 2pt; }
+  .blank.s { min-width: 28mm; }
+  .consent { margin-top: 1mm; padding: 4mm 5mm; border: 1px solid #1a1a1a; }
   .consent p { margin: 0 0 1.5mm 0; }
-  .consent .ask { font-weight: 500; margin-top: 2.5mm; margin-bottom: 0; }
-  .foot { margin-top: 5mm; padding-top: 3mm; border-top: 1px solid #ddd; font-size: 9pt; color: #555; display:flex; justify-content: space-between; }
+  .consent .ask { font-weight: 500; margin-top: 2.2mm; margin-bottom: 0; }
+  .spacer { flex: 1; }
+  .foot { margin-top: 4mm; padding-top: 3mm; border-top: 1px solid #ddd; font-size: 8.8pt; color: #555; display:flex; justify-content: space-between; }
 </style>
 </head>
 <body>
@@ -45,55 +49,61 @@
     <div class="title">약속 한 장</div>
   </div>
 
-  <p class="lead">보내는 것은 제가 다 봅니다. 빠뜨리지 않도록 AI도 함께 읽습니다.<br>다음 날 아침 10시까지 답하고, 매주 한 번은 앞에서 직접 확인합니다.<br><b>본 것은 잊지 않습니다.</b></p>
+  <p class="lead">미로 안에서는 미로가 보이지 않습니다.<br>저는 밖에서 한 학생의 공부 전체를 보고, 다음에 무엇을 할지 정합니다.<br><b>이 한 장은 그 약속의 조건입니다.</b></p>
 
   <div class="grid">
     <div>
       <h2>받으시는 것</h2>
       <ul>
-        <li><b>매일</b> 보낸 것에는 주말을 포함해 다음 날 오전 10시까지 답합니다. 막힌 문제는 풀이를 대신 써 드리지 않고, 어디서 막혔는지와 무엇을 보면 되는지(가지고 있는 교재·기출의 어느 부분을, 얼마나, 언제까지)를 알려 드립니다. 나머지는 거기서 하나를 묻습니다.</li>
-        <li><b>2주 안에 첫 장</b> — 지금 어떻게 풀고 있는지, 지금 넘을 한 곳, 넘었다고 볼 기준.</li>
-        <li><b>매주 한 번</b> 20분 화상 — 처음 보는 문제를 앞에서 풀게 하고 봅니다. 지난주에 하기로 한 것을 했는지 함께 보고, 다음 한 주에 할 것 하나를 정합니다. 그날 밤 보호자께 한 줄 보냅니다(성인 학생은 본인에게).</li>
-        <li><b>매달 한 장</b> — 넘어간 자리와 아직 남은 자리, 다음 달 가장 위험한 자리 하나. 달라졌는지·그대로인지·아직 모르는지. 학생과 보호자께 함께 보냅니다(성인 학생은 원할 때만).</li>
-        <li><b>먼저</b> — 닷새 비면 먼저 묻습니다. 같은 자리에서 세 번 걸리면 먼저 말하고 넘을 곳을 바꿉니다. 시험 전후와 선택 앞에서는 전화합니다.</li>
+        <li><b>답</b> — 보내 준 것에는 주말을 포함해 다음 날 오전 10시까지 답합니다.</li>
+        <li><b>확인</b> — 주 1회 화상(30분 안팎). 처음 보는 문제를 앞에서 풀게 하고, 판단이 맞는지 직접 봅니다. 다음 한 주에 할 것을 정하고, 그날 보호자께 한 줄 전합니다(성인 학생은 본인에게).</li>
+        <li><b>도움</b> — 무엇이 필요한지는 판단이 정합니다. 개념·풀이 설명, 확인할 문제, 과목을 넘는 순서, 입시 선택까지.</li>
+        <li><b>한 장</b> — 체험 2주 끝에 첫 장: 지금 어떻게 풀고 있는지, 넘을 곳과 그 근거, 확인한 것과 아직 모르는 것, 다음 한 달. 이어가면 매달 한 장. 학생과 보호자께 함께 드립니다(성인 학생은 원할 때만).</li>
+        <li><b>먼저</b> — 닷새 소식이 없으면 먼저 연락합니다. 같은 자리에서 세 번 걸리면 먼저 말하고 길을 바꿉니다. 시험 전후와 중요한 선택 앞에서는 전화합니다.</li>
       </ul>
     </div>
 
     <div>
       <h2>학생이 하는 것</h2>
       <ul>
-        <li><b>시작할 때</b> 최근 시험지 한 세트(푼 흔적·채점 그대로), 왜 틀렸는지 모르겠는 문제 1~3개.</li>
-        <li><b>매일</b> 공부한 것이나 막힌 것을 사진 한 장이나 한 줄로. 정리하지 않아도 됩니다. 못 한 날은 그 사실만.</li>
-        <li><b>풀 때</b> 확신이 없던 문항에는 △, 찍은 문항에는 ?를 남깁니다. 시험지는 영역마다 시작한 시각을 옆에 적습니다.</li>
-        <li><b>매주</b> 정한 요일·시간에 들어오고, 정한 것 하나를 해 옵니다.</li>
+        <li><b>시작할 때</b> 최근 시험지 한 세트(푼 흔적·채점 그대로)와 왜 틀렸는지 모르겠는 문제 1~3개.</li>
+        <li><b>공부하면서</b> 공부한 것이나 막힌 것을 사진 한 장이나 한 줄로. 학교·학원·인강·혼자 한 공부 무엇이든. 정리하지 않아도 됩니다. 못 한 날은 그 사실만.</li>
+        <li><b>풀 때</b> 확신 없던 문항에 △, 찍은 문항에 ?. 시험지에는 영역마다 시작한 시각을 적습니다.</li>
+        <li><b>화상</b> 정한 시간에 들어오고, 정한 것을 해 옵니다.</li>
       </ul>
 
       <h2>하지 않는 것</h2>
       <ul class="no">
-        <li>강의</li>
-        <li>문제·교재·자료 제작</li>
-        <li>숙제 일괄 부과</li>
+        <li>진도를 나가는 정규 수업</li>
+        <li>과제·시험을 대신 해 주는 일</li>
+        <li>무제한 화상 · 즉시 응답</li>
         <li>성적 보장</li>
       </ul>
     </div>
   </div>
 
   <h2>비용</h2>
-  <div class="price"><span class="n">월 500,000원</span><span class="u">한 학생 · 과목 수와 관계없이 · 추가 요금 없음 · 한 달 단위 · 시작 전 입금</span></div>
+  <div class="price">
+    <span class="n"><small>2주 체험</small>250,000원</span>
+    <span class="arrow">→</span>
+    <span class="n"><small>이어가면</small>월 500,000원</span>
+    <span class="u">한 학생 · 과목 수와 관계없이 · 추가 요금 없음 · 시작 전 입금</span>
+  </div>
   <ul>
-    <li class="acct">계좌 <span class="blank"></span> &nbsp; 입금 확인 후 시작하며, 시작일이 한 달의 기준일입니다.</li>
-    <li>다음 달은 자동으로 이어지지 않습니다. 매달 한 장을 보시고 이어갈지 정하시면 됩니다. 그만두실 때는 메시지 한 줄이면 됩니다.</li>
-    <li>중도 중단 시 환불 — 시작 전 전액 · 1/3 경과 전 2/3 · 1/2 경과 전 절반 · 그 이후 없음.</li>
+    <li>계좌 <span class="blank"></span> &nbsp; 입금을 확인하면 시작하며, 시작일이 기간의 기준일입니다. 영수증을 드립니다.</li>
+    <li>체험 2주가 끝나면 첫 장을 보시고 이어갈지 정하시면 됩니다. 이어가면 한 달 단위이고, 다음 달은 자동으로 이어지지 않습니다. 그만두실 때는 메시지 한 줄이면 됩니다.</li>
+    <li>중도 중단 시 환불(체험·월 모두, 학원법 시행령 기준) — 시작 전 전액 · 기간 1/3 경과 전 2/3 · 1/2 경과 전 절반 · 그 이후 없음.</li>
   </ul>
 
   <div class="consent">
-    <p>보내주신 사진과 기록은 AI가 전부 읽고 저장하며(해외 AI 서비스에서 처리될 수 있습니다), 저는 그것을 보고 판단합니다. 이름 대신 별칭으로 기록하고, 자료는 이 서비스 안에서만 쓰며 외부에 공개하지 않습니다. 요청하시면 지웁니다. 화상 자리는 기록을 위해 녹취될 수 있습니다.</p>
-    <p class="ask">이 내용으로 시작하시려면 보호자께서(성인 학생은 본인이) "네"로 답해 주세요.</p>
+    <p>사진과 기록은 AI와 함께 읽고 저장하며, 일부는 해외(미국) 서비스에서 처리됩니다. 이름 대신 별칭으로 기록하고, 이 공부 말고는 쓰지 않으며, 요청하시면 지웁니다. 무엇을 어디서 얼마나 두는지는 「자료 안내」에 적었습니다. 화상 녹화는 따로 여쭙고, 동의하실 때만 합니다.</p>
+    <p class="ask">이 한 장과 자료 안내를 보시고 시작하시려면, 보호자께서(성인 학생은 본인이) "네"로 답해 주세요.</p>
   </div>
 
+  <div class="spacer"></div>
   <div class="foot">
     <span>서울대학교 경제학부 이준석 · 국어·영어·수학 지도 6년</span>
-    <span>ONTIRIS</span>
+    <span>개인과외교습자 신고번호 <span class="blank s"></span> · ONTIRIS</span>
   </div>
 </body>
 </html>
