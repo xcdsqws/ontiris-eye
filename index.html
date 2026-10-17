@@ -134,6 +134,16 @@ details[open] summary{margin-bottom:8px}
 .draft{background:var(--paper);border:1px solid var(--accent);border-radius:8px;padding:9px 12px;display:grid;gap:6px;min-width:0}
 .draft.done{border-color:var(--line);opacity:.75}
 .draft textarea{font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;min-height:6em;resize:vertical}
+/* 보낼 글 — 고쳐서 바로 보내기 */
+.outbox{display:grid;gap:10px;padding-block:2px 6px}
+.draft .who2{font-weight:600;color:var(--ink)}
+.draft .cnt{font-size:11.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.draft .tell{font-size:12.5px;color:var(--warn);word-break:break-word}
+.draft .tell:empty,.draft .err:empty{display:none}
+.draft .err{font-size:12.5px;color:var(--warn);word-break:break-word}
+.act.send{background:var(--accent);color:var(--accent-ink);border-color:transparent;font-weight:600}
+.act.send.armed{background:var(--warn);color:#fff}
+.act:disabled{opacity:.6}
 .nameedit{display:flex;gap:6px;align-items:center}
 .nameedit input{font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:9em}
 @media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}.card:hover{border-color:var(--accent)}}
@@ -164,6 +174,10 @@ let NAMES = {};
 try { NAMES = JSON.parse(localStorage.getItem("eye_names") || "{}") || {}; } catch (_) {}
 const saveNames = () => { try { localStorage.setItem("eye_names", JSON.stringify(NAMES)); } catch (_) {} };
 const who = (u, alias) => NAMES[u] ? `${NAMES[u]} (${alias || u.slice(0, 4)})` : (alias || "새 방 " + u.slice(0, 4));
+// 보낼 글을 고치던 중이면 이 폰에 잠깐 남겨 둔다(새로 고침해도 안 날아가게). 보내거나 버리면 지운다
+let EDITS = {};
+try { EDITS = JSON.parse(localStorage.getItem("eye_draft_edits") || "{}") || {}; } catch (_) {}
+const saveEdits = () => { try { localStorage.setItem("eye_draft_edits", JSON.stringify(EDITS)); } catch (_) {} };
 const kst = (iso) => new Date(new Date(iso).getTime() + 9 * 3600e3);
 const hm = (iso) => kst(iso).toISOString().slice(11, 16);
 const md = (iso) => { const d = kst(iso); return `${d.getUTCMonth() + 1}/${d.getUTCDate()}`; };
@@ -196,14 +210,18 @@ function stripHtml(t, clickable) {
 }
 
 const STATUS_KO = { trial: "체험", member: "회원", contact: "상담 전", left: "끝남" };
-function roomsHtml(rooms) {
+function roomsHtml(rooms, invites) {
   if (!rooms?.length) return "";
-  return `<div class="h3x">새 방 ${rooms.length} — 누군지 정해 줘 (실명 말고 별칭)</div><div class="list" style="padding-block:0">${rooms.map((r) => `
+  const inv = invites || [];
+  const invLabel = (x) => `${x.from_key && NAMES[x.from_key] ? esc(NAMES[x.from_key]) + " " : ""}${esc(x.alias)}<span class="meta"> · ${esc([x.from_key ? "보호자 방에서 옮김" : x.track, x.speech].filter(Boolean).join(" · "))}</span>`;
+  return `<div class="h3x">새 방 ${rooms.length} — ${inv.length ? "들어올 학생 중 누군지 눌러 줘 (첫 글에 이름이 있으면 그걸로)" : "누군지 정해 줘 (실명 말고 별칭)"}</div><div class="list" style="padding-block:0">${rooms.map((r) => `
     <form class="room" data-u="${esc(r.user_key)}">
       <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;align-items:baseline"><span class="who" style="font-weight:600">새 방 ${esc(r.user_key.slice(0, 4))}</span>
         <span class="meta">글 ${r.messages} · 사진 ${r.photos} · ${md(r.first_seen)} 처음 · ${md(r.last_seen)} ${hm(r.last_seen)} 마지막</span>
         <button type="button" class="meta peek" style="margin-left:auto;color:var(--accent)">보기 →</button></div>
       ${r.texts.length ? `<div class="t">${r.texts.map((t) => "“" + esc(t) + "”").join("<br>")}</div>` : ""}
+      ${inv.length ? `<div class="acts">${inv.map((x) => `<button type="button" class="act" data-inv="${x.id}" data-a="${esc(x.alias)}">${invLabel(x)}</button>`).join("")}</div>` : ""}
+      <details ${inv.length ? "" : "open"}><summary>목록에 없으면 직접 입력</summary>
       <div class="f">
         <input name="alias" placeholder="별칭 (예: SY)" maxlength="20" required autocomplete="off">
         <input name="grade" placeholder="학년 (예: 고2)" maxlength="20" autocomplete="off">
@@ -211,11 +229,20 @@ function roomsHtml(rooms) {
         <select name="status"><option value="trial">체험</option><option value="member">회원(기존 수업)</option><option value="contact">상담 전</option></select>
         <label class="chk wide"><input type="checkbox" name="consent" value="1"> 약속 한 장·자료 안내에 '네' 받음 (없으면 사진을 AI가 안 읽음)</label>
         <button class="btn sm wide" type="submit">등록</button>
-      </div><div class="msgline"></div></form>`).join("")}</div>`;
+      </div></details><div class="msgline"></div></form>`).join("")}</div>`;
 }
 function bindRooms() {
   main.querySelectorAll("form.room").forEach((f) => {
     f.querySelector(".peek")?.addEventListener("click", () => go({ name: "student", u: f.dataset.u }));
+    // 들어올 학생 목록에서 하나: 두 번 눌러 등록(보호자 방에서 옮겨 오는 학생은 기록까지 같이 옮겨짐)
+    f.querySelectorAll("[data-inv]").forEach((b) => b.addEventListener("click", async () => {
+      const line = f.querySelector(".msgline");
+      if (!b.classList.contains("armed")) { f.querySelectorAll("[data-inv].armed").forEach((x) => { x.classList.remove("armed"); x.innerHTML = x.dataset.l; });
+        b.dataset.l = b.innerHTML; b.classList.add("armed"); b.textContent = `한 번 더 누르면 ${b.dataset.a}로 등록`; return; }
+      b.disabled = true; line.className = "msgline"; line.textContent = "등록 중…";
+      try { await post({ action: "invite_use", u: f.dataset.u, invite_id: Number(b.dataset.inv) }); go({ name: "home" }); }
+      catch (err) { if (String(err.message) === "auth") return go({ name: "home" }); b.disabled = false; line.className = "msgline bad"; line.textContent = "안 됐어: " + err.message; }
+    }));
     f.addEventListener("submit", async (e) => {
       e.preventDefault();
       const fd = new FormData(f), line = f.querySelector(".msgline");
@@ -359,6 +386,69 @@ function obsHtml(list) {
 }
 const OB_LABEL = { done: "", skip: "", waiting: "읽기 전", error: "실패", stopped: "멈춤" };
 
+// ---- 보낼 글(초안) — 홈 맨 위와 학생 화면이 같은 카드를 쓴다 ----
+const DK = { "질문 답": "질문 답", "한 줄": "아침 한 줄", "카톡 문제": "카톡 문제", "인사": "인사" };
+// AI 티 검사 — 예약 작업이 쓴 뒤 검사하는 목록과 같은 것. 보내기 전에 눈으로 한 번 더
+const TELLS = [[/핵심은/, "핵심은"], [/정리하면|요약하면|결론적으로/, "정리하면"], [/(^|\s)즉,/, "즉,"], [/첫째|둘째/, "첫째·둘째"],
+  [/하는 것이 중요/, "~하는 것이 중요"], [/보는 건 어떨까요/, "~해 보는 건 어떨까요"], [/도움이 되었으면|도움이 되길/, "도움이 되었으면"],
+  [/→/, "화살표"], [/\*\*/, "굵은 글씨"], [/^\s*(#|[-•]\s)/m, "목록·소제목"], [/화이팅|파이팅/, "화이팅"], [/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u, "이모티콘"]];
+function tellsOf(text, x) {
+  const out = TELLS.filter(([re]) => re.test(text)).map(([, l]) => l);
+  if (x.alias && !x.guardian && /주세요/.test(text)) out.push("학생에겐 '~해 주세요' 말고 '~해 줘요'");
+  return out;
+}
+function draftCard(x, withWho) {
+  const when = `${esc(DK[x.kind] || x.kind)} · ${md(x.made_at)} ${hm(x.made_at)}`;
+  if (x.sent_at) return `<div class="draft done"><div class="meta">${when}${x.sent_text === "" ? " · 버림" : ` · 보냄 ${hm(x.sent_at)}${x.sent_via === "대시보드" ? " (여기서)" : ""}`}</div>${x.sent_text === "" ? "" : `<div class="msg">${esc(x.sent_text || x.text)}</div>`}</div>`;
+  const head = withWho ? `<span class="who2">${esc(who(x.user_key, x.alias))}${x.guardian ? " · 보호자 방" : ""}</span> · ` : "";
+  return `<div class="draft" data-draft="${x.id}" data-guardian="${x.guardian ? 1 : 0}" data-alias="${esc(x.alias || "")}">
+    <div class="meta">${head}${when}</div>
+    <textarea aria-label="보낼 글">${esc(EDITS[x.id] ?? x.text)}</textarea>
+    <div class="cnt"></div><div class="tell"></div>${x.send_error ? `<div class="err">지난번엔 안 갔어: ${esc(x.send_error)}</div>` : ""}
+    <div class="acts">${x.channel === false ? "" : `<button type="button" class="act send" data-send="1">카톡으로 보내기</button>`}<button type="button" class="act" data-copy="1">복사</button><button type="button" class="act" data-sent="1">직접 보냈음</button><button type="button" class="act" data-skip="1">버림</button>${withWho ? `<button type="button" class="act" data-open="${esc(x.user_key)}">학생 화면</button>` : ""}</div>
+    <div class="msgline"></div></div>`;
+}
+function bindDrafts(reload) {
+  main.querySelectorAll("[data-draft]").forEach((card) => {
+    const id = Number(card.dataset.draft), ta = card.querySelector("textarea"), line = card.querySelector(".msgline");
+    if (!ta) return;
+    const x = { guardian: card.dataset.guardian === "1", alias: card.dataset.alias };
+    const sendB = card.querySelector("[data-send]");
+    let timer = null;
+    const disarm = () => { clearTimeout(timer); if (sendB && !sendB.disabled) { sendB.classList.remove("armed"); sendB.textContent = "카톡으로 보내기"; } };
+    const check = () => { const t = ta.value.trim(); card.querySelector(".cnt").textContent = `${t.length}자${t.length > 1000 ? " — 1000자까지" : ""}`;
+      const tl = tellsOf(t, x); card.querySelector(".tell").textContent = tl.length ? "AI 티: " + tl.join(" · ") : ""; };
+    check();
+    ta.addEventListener("input", () => { EDITS[id] = ta.value; saveEdits(); check(); disarm(); });
+    const done = (msg) => { delete EDITS[id]; saveEdits(); line.className = "msgline"; line.textContent = msg; card.querySelectorAll("button").forEach((b) => (b.disabled = true)); setTimeout(reload, 800); };
+    const fail = (b, err, label) => { if (String(err.message) === "auth") return go({ name: "home" }); b.disabled = false; if (label) b.textContent = label; line.className = "msgline bad"; line.textContent = "안 갔어: " + err.message; };
+    sendB?.addEventListener("click", async () => {
+      const t = ta.value.trim();
+      if (!t) { line.className = "msgline bad"; line.textContent = "글이 비었어"; return; }
+      if (!sendB.classList.contains("armed")) { sendB.classList.add("armed"); sendB.textContent = `한 번 더 누르면 보냄 · ${t.length}자`; timer = setTimeout(disarm, 5000); return; }
+      clearTimeout(timer); sendB.disabled = true; sendB.textContent = "보내는 중…"; line.className = "msgline"; line.textContent = "";
+      try { await post({ action: "draft_send", id, text: t }); sendB.classList.remove("armed"); sendB.textContent = "보냄 ✓"; done("카톡으로 나감 " + hm(new Date().toISOString())); }
+      catch (err) { sendB.classList.remove("armed"); fail(sendB, err, "카톡으로 보내기"); }
+    });
+    card.querySelector("[data-copy]")?.addEventListener("click", async (e) => {
+      const b = e.currentTarget;
+      try { await navigator.clipboard.writeText(ta.value); b.textContent = "복사됨"; }
+      catch (_) { ta.select(); try { document.execCommand("copy"); b.textContent = "복사됨"; } catch (__) { line.textContent = "길게 눌러 복사해 줘"; } }
+    });
+    card.querySelector("[data-sent]")?.addEventListener("click", async (e) => {
+      const b = e.currentTarget; b.disabled = true;
+      try { await post({ action: "draft_done", id, text: ta.value }); done("직접 보낸 것으로 기록"); } catch (err) { fail(b, err); }
+    });
+    card.querySelector("[data-skip]")?.addEventListener("click", async (e) => {
+      const b = e.currentTarget;
+      if (!b.classList.contains("armed")) { b.classList.add("armed"); b.textContent = "한 번 더 누르면 버림"; return; }
+      b.disabled = true;
+      try { await post({ action: "draft_done", id, skip: true }); done("버림"); } catch (err) { fail(b, err); }
+    });
+    card.querySelector("[data-open]")?.addEventListener("click", (e) => go({ name: "student", u: e.currentTarget.dataset.open }));
+  });
+}
+
 async function home() {
   main.innerHTML = `<div class="empty">보는 중…</div>`;
   const d = await call({ view: "home" });
@@ -379,7 +469,10 @@ async function home() {
   if (d.observe?.stalled_min) banners.push(`사진 읽기가 ${d.observe.stalled_min}분째 안 돌고 있어 (자동 읽기 멈춤 의심)`);
   (d.runs_stale || []).forEach((r) => banners.push(`${esc(r.name)}이 ${r.hours == null ? "기록이 없어" : r.hours + "시간째 안 돌았어"} — 예약 작업 확인`));
   const banner = banners.map((b) => `<div class="banner">${b}</div>`).join("");
-  main.innerHTML = `${banner}${stripHtml(d.tally, true)}${roomsHtml(d.new_rooms)}<div class="list">${items || `<div class="empty">아직 별칭이 붙은 학생이 없어.</div>`}</div>`;
+  const box = d.drafts || [];
+  const outbox = box.length ? `<div class="h3x">보낼 글 ${box.length} — 고쳐서 '카톡으로 보내기' 두 번 (누를 때만 나감)</div><div class="outbox">${box.map((x) => draftCard(x, true)).join("")}</div>` : "";
+  main.innerHTML = `${banner}${outbox}${stripHtml(d.tally, true)}${roomsHtml(d.new_rooms, d.invites)}<div class="list">${items || `<div class="empty">아직 별칭이 붙은 학생이 없어.</div>`}</div>`;
+  bindDrafts(() => go({ name: "home" }));
   main.querySelectorAll(".card").forEach((b) => b.addEventListener("click", () => go({ name: "student", u: b.dataset.u })));
   $("#strip")?.addEventListener("click", () => go({ name: "ledger" }));
   bindRooms();
@@ -414,15 +507,11 @@ async function student(u, days = 14) {
       <textarea name="prescribed" placeholder="다음까지 하기로 정한 것 (학생이 할 행동 하나)" maxlength="300"></textarea>
       <textarea name="note" placeholder="메모 (실명 X)" maxlength="500"></textarea>
       <button class="btn sm wide" type="submit">기록</button></div><div class="msgline"></div></form></details>`;
-  const DK = { "질문 답": "질문 답", "한 줄": "아침 한 줄", "카톡 문제": "카톡 문제", "인사": "인사" };
-  const pend = (d.drafts || []).filter((x) => !x.sent_at), doneD = (d.drafts || []).filter((x) => x.sent_at);
-  const draftCard = (x) => `<div class="draft ${x.sent_at ? "done" : ""}" data-draft="${x.id}">
-      <div class="meta">${esc(DK[x.kind] || x.kind)} · ${md(x.made_at)} ${hm(x.made_at)}${x.sent_at ? (x.sent_text === "" ? " · 버림" : " · 보냄 " + hm(x.sent_at)) : ""}</div>
-      ${x.sent_at ? `<div class="msg">${esc(x.sent_text || x.text)}</div>` : `<textarea>${esc(x.text)}</textarea>
-      <div class="acts"><button type="button" class="act" data-copy="1">복사</button><button type="button" class="act" data-sent="1">보냄 (고친 글로 기록)</button><button type="button" class="act" data-skip="1">버림</button></div><div class="msgline"></div>`}</div>`;
+  const mine = (d.drafts || []).map((x) => ({ ...x, user_key: m.user_key, alias: m.alias, guardian: !!m.guardian_of, channel: !m.user_key.startsWith("manual-") }));
+  const pend = mine.filter((x) => !x.sent_at), doneD = mine.filter((x) => x.sent_at);
   const drafts_html = pend.length || doneD.length ? `<section class="sec"><h3>보낼 글<span class="n">${pend.length ? pend.length + "개 대기" : "대기 없음"}</span></h3>
-    <div class="recs">${pend.map(draftCard).join("")}</div>
-    ${doneD.length ? `<details><summary>보낸·버린 초안 ${doneD.length}</summary><div class="recs">${doneD.map(draftCard).join("")}</div></details>` : ""}</section>` : "";
+    <div class="recs">${pend.map((x) => draftCard(x, false)).join("")}</div>
+    ${doneD.length ? `<details><summary>보낸·버린 초안 ${doneD.length}</summary><div class="recs">${doneD.map((x) => draftCard(x, false)).join("")}</div></details>` : ""}</section>` : "";
   const consent_html = m.consent_on ? `<div class="consent"><span class="pill">동의 ${esc(m.consent_on.slice(5).replace("-", "/"))}</span></div>`
     : `<div class="consent"><span class="pill ${d.ai_ok ? "quiet" : "warn"}">${d.ai_ok ? "동의 전 · 10/31까지 유예" : "동의 전 · 사진을 AI가 읽지 않음"}</span><button type="button" class="act" id="consentbtn">'네' 받음 (오늘)</button></div>`;
   main.innerHTML = `
@@ -443,28 +532,11 @@ async function student(u, days = 14) {
   window.scrollTo(0, 0);
 }
 
-// 학생 화면의 쓰기: 동의 · 짐작 승인(두 번 눌러 확정) · 예측 확인 · 했나 · 자리 한 줄
+// 학생 화면의 쓰기: 보낼 글 · 동의 · 짐작 승인(두 번 눌러 확정) · 예측 확인 · 했나 · 자리 한 줄
 function bindStudent(u, days) {
   const reload = () => go({ name: "student", u, days });
   $("#namesave")?.addEventListener("click", () => { const v = $("#namein").value.trim(); if (v) NAMES[u] = v; else delete NAMES[u]; saveNames(); reload(); });
-  main.querySelectorAll("[data-draft]").forEach((card) => {
-    const id = Number(card.dataset.draft), ta = card.querySelector("textarea"), line = card.querySelector(".msgline");
-    if (!ta) return;
-    card.querySelector("[data-copy]")?.addEventListener("click", async (e) => {
-      try { await navigator.clipboard.writeText(ta.value); e.currentTarget.textContent = "복사됨"; }
-      catch (_) { ta.select(); try { document.execCommand("copy"); e.currentTarget.textContent = "복사됨"; } catch (__) { line.textContent = "길게 눌러 복사해 줘"; } }
-    });
-    card.querySelector("[data-sent]")?.addEventListener("click", async (e) => {
-      const b = e.currentTarget; b.disabled = true;
-      try { await post({ action: "draft_done", id, text: ta.value }); reload(); } catch (err) { fail(b, err); }
-    });
-    card.querySelector("[data-skip]")?.addEventListener("click", async (e) => {
-      const b = e.currentTarget;
-      if (!b.classList.contains("armed")) { b.classList.add("armed"); b.textContent = "한 번 더 누르면 버림"; return; }
-      b.disabled = true;
-      try { await post({ action: "draft_done", id, skip: true }); reload(); } catch (err) { fail(b, err); }
-    });
-  });
+  bindDrafts(reload);
   const fail = (b, err) => { if (String(err.message) === "auth") return go({ name: "home" }); b.disabled = false; b.textContent = "안 됨: " + err.message; };
   $("#consentbtn")?.addEventListener("click", async (e) => { const b = e.currentTarget; b.disabled = true; try { await post({ action: "consent", u }); reload(); } catch (err) { fail(b, err); } });
   main.querySelectorAll("[data-hyp]").forEach((b) => b.addEventListener("click", async () => {
