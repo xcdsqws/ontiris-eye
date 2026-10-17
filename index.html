@@ -487,7 +487,9 @@ async function student(u, days = 14) {
   d.photos.forEach((p) => (byDay[p.day] ??= []).push(p));
   const days_html = Object.keys(byDay).sort().reverse().map((day) => `
     <div class="day"><div class="d">${dayLabel(day)} · ${byDay[day].length}장</div>
-      <div class="grid">${byDay[day].sort((a, b) => a.seq - b.seq || a.idx - b.idx).map((p) => p.thumb
+      <div class="grid">${byDay[day].sort((a, b) => a.seq - b.seq || a.idx - b.idx).map((p) => p.type !== "photo" && p.url
+        ? `<a class="pending" href="${esc(p.url)}" target="_blank" rel="noopener">파일 열기</a>`
+        : p.thumb
         ? `<a href="${esc(p.url)}" target="_blank" rel="noopener"><img loading="lazy" src="${esc(p.thumb)}" alt="${esc(m.alias)} ${day} ${p.seq}-${p.idx}">${OB_LABEL[p.observed] ? `<span class="ob ${p.observed === "waiting" ? "" : "err"}">${OB_LABEL[p.observed]}</span>` : ""}</a>`
         : `<a class="pending" href="#">${p.status === "failed" ? "저장 실패" : "처리 중"}</a>`).join("")}</div></div>`).join("");
   const model_html = ["current_gap:넘을 한 곳", "how_solving:푸는 방식", "next_risk:다음에 걸릴 것", "upcoming:앞에 있는 것"].map((kv) => { const [k, l] = kv.split(":"); return mo[k] ? `<div><div class="k">${l}${k === "current_gap" && mo.gap_since ? ` · ${esc(mo.gap_since)}부터 · ${mo.gap_hits ?? 0}번 걸림` : ""}</div><div class="v">${esc(mo[k])}</div></div>` : ""; }).join("");
