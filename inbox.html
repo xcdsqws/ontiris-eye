@@ -142,6 +142,57 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible{
 .key input{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);width:100%}
 .btn{background:var(--accent);color:var(--accent-ink);padding:10px 14px;border-radius:8px;font-weight:600}
 .loading{color:var(--ink-2);font-size:13px;padding:18px}
+/* 장부(제안 기록) · 컴퓨터 알림 */
+.bar .ldg{display:inline-flex;align-items:baseline;gap:0;font-size:13px;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:3px 12px;background:var(--paper);white-space:nowrap}
+.bar .ldg:hover{border-color:var(--ink-2);color:var(--ink)}
+.bar .ldg b{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;margin-left:5px}
+.bar .ldg b.full{color:var(--accent)}
+.bar .ldg .k{color:var(--ink-2)}
+.bar .tg[aria-pressed="true"]{color:var(--accent)}
+.drw{position:fixed;top:0;right:0;bottom:0;width:min(500px,100vw);background:var(--bg);border-left:1px solid var(--line);box-shadow:-16px 0 40px rgba(0,0,0,.10);z-index:15;display:grid;grid-template-rows:auto auto auto 1fr}
+.drw[hidden]{display:none}
+.dhd{display:flex;align-items:baseline;gap:10px;padding:14px 20px 8px}
+.dhd h2{font-family:var(--display);font-size:20px;margin:0;font-weight:700}
+.dhd .rng{color:var(--ink-2);font-size:13px;font-variant-numeric:tabular-nums}
+.dhd .sp{flex:1}
+.dhd button{color:var(--ink-2);font-size:13px}
+.dhd button:hover{color:var(--ink)}
+.wk{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:4px 20px 12px}
+.wk div{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:7px 10px;display:grid;gap:0}
+.wk b{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.3}
+.wk b small{font-size:12px;font-weight:400;color:var(--ink-2)}
+.wk span{font-size:12px;color:var(--ink-2)}
+.qa{padding:10px 20px 14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;gap:8px;background:var(--paper)}
+.qa .h{font-size:12px;letter-spacing:.06em;color:var(--ink-2);font-weight:600}
+.qa .f1{display:grid;grid-template-columns:132px 76px 1fr 84px 64px;gap:6px}
+.qa .f2{display:grid;grid-template-columns:1fr auto;gap:6px}
+.qa input,.qa select{font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);min-width:0;width:100%}
+.qa input:focus-visible,.qa select:focus-visible{outline:none;border-color:var(--accent)}
+.qa .ft{display:flex;gap:10px;font-size:12px;color:var(--ink-2);min-height:18px}
+.qa .ft .sp{flex:1}
+.qa .ft .bad{color:var(--warn)}
+.qa .ft .good{color:var(--ok)}
+.qa .add{background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:14px;padding:6px 16px;border-radius:7px;white-space:nowrap}
+.lgl{overflow-y:auto;min-height:0;padding:4px 20px 32px}
+.lgl .hh{font-size:12px;letter-spacing:.06em;color:var(--ink-2);font-weight:600;margin:12px 0 2px}
+.lr{padding:10px 0;border-bottom:1px solid var(--line);display:grid;gap:6px}
+.lr .t1{display:flex;gap:8px;align-items:baseline;min-width:0}
+.lr .d{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lr .w{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lr .m{font-size:12px;color:var(--ink-2);white-space:nowrap}
+.lr .x{margin-left:auto;font-size:12px;color:var(--ink-2)}
+.lr .x:hover{color:var(--ink)}
+.lr .pb{font-size:13.5px;color:var(--ink);white-space:pre-wrap}
+.lr .pb.q{color:var(--ink-2)}
+.lr.nc .w{color:var(--ink-2);font-weight:500}
+.stp{display:flex;gap:6px;flex-wrap:wrap}
+.st{font-size:12.5px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2);background:var(--paper);font-variant-numeric:tabular-nums}
+.st:hover:not(:disabled){border-color:var(--ink-2);color:var(--ink)}
+.st.on{background:var(--ok-bg);border-color:transparent;color:var(--ok);font-weight:600}
+.st.armed{background:var(--warn);border-color:var(--warn);color:var(--paper)}
+.nf{display:grid;grid-template-columns:1fr 1fr auto;gap:6px}
+.nf input{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink);min-width:0}
+.nf button{font-size:13px;padding:4px 12px;border-radius:7px;border:1px solid var(--line);background:var(--paper)}
 @media (max-width:1100px){.panes{grid-template-columns:290px 1fr}.b{max-width:80%}}
 @media (max-width:760px){
   .panes{grid-template-columns:1fr}
@@ -150,6 +201,11 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible{
   .rh .back{display:inline}
   .conv,.cp,.rh{padding-left:14px;padding-right:14px}
   .bar .poll{display:none}
+  .bar{flex-wrap:wrap;row-gap:6px}
+  .bar .ldg .k{display:none}
+  #sndb{display:none}
+  .qa .f1{grid-template-columns:1fr 1fr 1fr}
+  .wk{grid-template-columns:repeat(5,minmax(0,1fr))}
 }
 </style></head>
 <body>
@@ -158,7 +214,10 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible{
     <h1>온티리스 대화</h1>
     <span class="date" id="today"></span>
     <span class="sp"></span>
+    <button type="button" class="ldg" id="ldgb" title="장부 열기 — 제안 보낸 것 기록">이번 주 제안 <b id="wkn">–</b><span class="k">/20 · 장부</span></button>
     <span class="poll" id="poll"></span>
+    <button type="button" class="tg" id="ntfb" aria-pressed="false">알림 켜기</button>
+    <button type="button" class="tg" id="sndb" aria-pressed="true" hidden>소리 켬</button>
     <a href="./">예전 화면</a>
     <button id="refresh" type="button">새로 고침</button>
     <button id="logout" type="button" hidden>열쇠 지우기</button>
@@ -173,6 +232,23 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible{
   <div class="stage"><button type="button" class="nav prev" id="lbp" aria-label="이전">‹</button><img id="lbi" alt=""><button type="button" class="nav next" id="lbq" aria-label="다음">›</button></div>
   <div class="bot" id="lbc"></div>
 </div>
+<aside class="drw" id="drw" hidden aria-label="장부">
+  <div class="dhd"><h2>장부</h2><span class="rng" id="wkr"></span><span class="sp"></span><button type="button" id="drx">닫기 (Esc)</button></div>
+  <div class="wk" id="wk"></div>
+  <form class="qa" id="qa" autocomplete="off">
+    <div class="h">제안 한 통 보냈으면 여기 한 줄</div>
+    <div class="f1">
+      <input type="date" id="qd" aria-label="보낸 날">
+      <select id="qg" aria-label="학년"><option>중1</option><option>중2</option><option>중3</option><option>고1</option><option selected>고2</option><option>고3</option><option>N수</option><option>기타</option></select>
+      <input id="qs" maxlength="10" placeholder="과목" aria-label="과목">
+      <select id="qp" aria-label="어디서"><option>김과외</option><option>소개</option><option>기타</option></select>
+      <select id="qv" aria-label="제안 종류"><option>D</option><option>C</option><option>기타</option></select>
+    </div>
+    <div class="f2"><input id="qm" maxlength="200" placeholder="상대가 쓴 고민 한 줄 그대로 — 실명 말고 (Enter로 기록)" aria-label="고민 한 줄"><button type="submit" class="add" id="qb">기록</button></div>
+    <div class="ft"><span id="qw"></span><span class="sp"></span><span id="qr"></span></div>
+  </form>
+  <div class="lgl" id="lgl"></div>
+</aside>
 
 <script>
 const API = "https://ippyzlrprvmvuimlrbqw.supabase.co/functions/v1/eye";
@@ -264,8 +340,186 @@ async function loadInbox() {
   const j = await call({ view: "inbox" });
   S.rooms = j.rooms || [];
   renderList();
+  notifyNew(checkNew(S.rooms));
   return j;
 }
+
+// ---------- 컴퓨터 알림: 학생 글이 새로 오면(첫 불러오기는 빼고) ----------
+let NOTIFY = false, SOUND = true;
+try { NOTIFY = localStorage.getItem("eye_notify") === "1"; SOUND = localStorage.getItem("eye_sound") !== "0"; } catch (_) {}
+const saveNotify = () => { try { localStorage.setItem("eye_notify", NOTIFY ? "1" : "0"); localStorage.setItem("eye_sound", SOUND ? "1" : "0"); } catch (_) {} };
+const canNotify = () => typeof window.Notification === "function";
+const notifyOn = () => NOTIFY && canNotify() && Notification.permission === "granted";
+function renderNotifyBtn() {
+  const b = $("#ntfb"), s = $("#sndb");
+  const perm = canNotify() ? Notification.permission : "unsupported", on = notifyOn();
+  b.setAttribute("aria-pressed", on ? "true" : "false");
+  b.textContent = perm === "denied" ? "알림 막힘" : perm === "unsupported" ? "알림 안 됨" : on ? "알림 켬" : "알림 켜기";
+  b.title = perm === "denied" ? "브라우저 설정에서 이 사이트의 알림을 허용해야 해" : perm === "unsupported" ? "이 브라우저는 알림을 못 써" : on ? "누르면 알림 끔" : "새 글이 오면 컴퓨터 알림(다른 창을 보고 있어도)";
+  s.hidden = !on; s.setAttribute("aria-pressed", SOUND ? "true" : "false"); s.textContent = SOUND ? "소리 켬" : "소리 끔";
+}
+let AC = null;
+function ensureAudio() { try { if (!AC) { const C = window.AudioContext || window.webkitAudioContext; if (C) AC = new C(); } if (AC && AC.state === "suspended") AC.resume(); } catch (_) {} }
+function beep() {
+  try {
+    if (!AC) ensureAudio(); if (!AC) return;
+    const t = AC.currentTime;
+    [[660, 0], [880, 0.15]].forEach(([f, dt]) => {
+      const o = AC.createOscillator(), g = AC.createGain();
+      o.type = "sine"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t + dt); g.gain.exponentialRampToValueAtTime(0.05, t + dt + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dt + 0.24);
+      o.connect(g); g.connect(AC.destination); o.start(t + dt); o.stop(t + dt + 0.26);
+    });
+  } catch (_) {}
+}
+const SEEN = new Map(); let seenReady = false;
+function checkNew(rooms) {
+  const fresh = [];
+  rooms.forEach((r) => {
+    if (r.test || !r.last_in_at) return;
+    const prev = SEEN.get(r.user_key);
+    if (seenReady && (!prev || r.last_in_at > prev)) fresh.push(r);
+    SEEN.set(r.user_key, r.last_in_at);
+  });
+  if (!seenReady) { seenReady = true; return []; }
+  return fresh;
+}
+function notifyNew(fresh) {
+  if (!fresh.length || !notifyOn()) return;
+  const vis = document.visibilityState === "visible";
+  const list = fresh.filter((r) => !(vis && S.open === r.user_key)); // 보고 있는 방은 알리지 않는다
+  if (!list.length) return;
+  list.slice(0, 4).forEach((r) => {
+    const nm = nameOf(r.user_key, r.alias);
+    const body = r.last_who === "them" && r.last_text ? Array.from(r.last_text).slice(0, 40).join("") : "새 글";
+    try {
+      const n = new Notification(`${nm} · 새 글`, { body, tag: "ontiris-" + r.user_key, renotify: true, silent: true });
+      n.onclick = () => { try { window.focus(); } catch (_) {} n.close(); openRoom(r.user_key); };
+    } catch (_) {}
+  });
+  if (SOUND) beep();
+}
+$("#ntfb").addEventListener("click", async () => {
+  if (!canNotify()) return renderNotifyBtn();
+  if (notifyOn()) { NOTIFY = false; saveNotify(); return renderNotifyBtn(); }
+  let p = Notification.permission;
+  if (p === "default") { try { p = await Notification.requestPermission(); } catch (_) {} }
+  NOTIFY = p === "granted"; saveNotify(); ensureAudio(); renderNotifyBtn();
+});
+$("#sndb").addEventListener("click", () => { SOUND = !SOUND; saveNotify(); renderNotifyBtn(); if (SOUND) { ensureAudio(); beep(); } });
+
+// ---------- 장부: 제안 보낸 것(실명 없이) ----------
+const L = { rows: [], today: null, loadedAt: 0 };
+const STEP_KO = [["replied_at", "답장"], ["called_at", "상담"], ["demo_at", "체험"], ["paid_at", "결제"]];
+const counted = (r) => !/^(문의|테스트)/.test(String(r.variant || "")); // 들어온 문의·테스트는 제안 수에 안 넣는다
+const mdOf = (d) => d ? `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}` : "";
+const todayKst = () => ymd(new Date().toISOString());
+function weekRange(today) {
+  const d = new Date(today + "T00:00:00Z"), back = (d.getUTCDay() + 6) % 7;
+  const mon = new Date(d.getTime() - back * 86400e3), sun = new Date(mon.getTime() + 6 * 86400e3);
+  return [mon.toISOString().slice(0, 10), sun.toISOString().slice(0, 10)];
+}
+function weekStats() {
+  const [a, b] = weekRange(L.today || todayKst()), inW = (s) => !!s && s.slice(0, 10) >= a && s.slice(0, 10) <= b;
+  const rs = L.rows.filter(counted);
+  return { a, b, sent: rs.filter((r) => inW(r.sent_on)).length, replied: rs.filter((r) => inW(r.replied_at)).length, called: rs.filter((r) => inW(r.called_at)).length, demo: rs.filter((r) => inW(r.demo_at)).length, paid: rs.filter((r) => inW(r.paid_at)).length };
+}
+function renderWeek() {
+  const w = weekStats();
+  $("#wkn").textContent = String(w.sent); $("#wkn").className = w.sent >= 20 ? "full" : "";
+  if ($("#drw").hidden) return;
+  $("#wkr").textContent = `이번 주 ${mdOf(w.a)}(월)~${mdOf(w.b)}(일)`;
+  $("#wk").innerHTML = [["제안", w.sent, "/20"], ["답장", w.replied], ["상담", w.called], ["체험", w.demo], ["결제", w.paid]]
+    .map(([k, n, s]) => `<div><b>${n}${s ? `<small>${s}</small>` : ""}</b><span>${k}</span></div>`).join("");
+}
+function whoPreview() {
+  const day = $("#qd").value || todayKst(), subj = $("#qs").value.trim();
+  const n = L.rows.filter((r) => r.sent_on === day).length + 1;
+  return subj ? `${$("#qg").value} ${subj} ${mdOf(day)}-${n}` : "";
+}
+function renderQw() { const w = whoPreview(); $("#qw").textContent = w ? `이렇게 남아: ${w}` : "과목을 쓰면 이름이 만들어져(실명은 안 남김)"; }
+function lrHtml(r) {
+  const nc = !counted(r);
+  const meta = [r.grade, r.platform, r.variant].filter(Boolean).join(" · ");
+  const extra = [r.objection && "반론: " + r.objection, r.post_note].filter(Boolean).join(" · ");
+  return `<div class="lr${nc ? " nc" : ""}" data-id="${r.id}">
+    <div class="t1"><span class="d">${esc(mdOf(r.sent_on))}</span><span class="w">${esc(r.who)}</span><span class="m">${esc(meta)}${nc ? " · 제안 수에 안 셈" : ""}</span><button type="button" class="x" data-note="1">${extra ? "메모 고치기" : "반론·메모"}</button></div>
+    ${r.stated_problem ? `<div class="pb">“${esc(r.stated_problem)}”</div>` : ""}
+    ${extra ? `<div class="pb q">${esc(extra)}</div>` : ""}
+    <div class="stp">${STEP_KO.map(([f, l]) => `<button type="button" class="st${r[f] ? " on" : ""}" data-f="${f}">${l}${r[f] ? " " + esc(mdOf(r[f])) : ""}</button>`).join("")}</div>
+    <div data-nf></div>
+  </div>`;
+}
+function renderLedger() {
+  renderWeek();
+  const from = (() => { const d = new Date((L.today || todayKst()) + "T00:00:00Z"); return new Date(d.getTime() - 30 * 86400e3).toISOString().slice(0, 10); })();
+  const rows = L.rows.filter((r) => r.sent_on >= from);
+  $("#lgl").innerHTML = `<div class="hh">최근 30일 · ${rows.filter(counted).length}통 — 답장·상담·체험·결제가 생기면 눌러 (켜진 걸 다시 누르면 지울지 물어)</div>` + (rows.length ? rows.map(lrHtml).join("") : `<div class="pb q" style="padding:10px 0">아직 없어</div>`);
+}
+async function loadLedger() {
+  const j = await call({ view: "ledger" });
+  L.rows = j.rows || []; L.today = j.today || todayKst(); L.loadedAt = Date.now();
+  if (!$("#drw").hidden) renderLedger(); else renderWeek();
+  renderQw();
+}
+const placeDrawer = () => { $("#drw").style.top = $(".bar").offsetHeight + "px"; };
+window.addEventListener("resize", () => { if (!$("#drw").hidden) placeDrawer(); });
+function openLedger() {
+  placeDrawer(); $("#drw").hidden = false;
+  if (!$("#qd").value) $("#qd").value = L.today || todayKst();
+  renderLedger(); renderQw();
+  setTimeout(() => $("#qs").value ? $("#qm").focus() : $("#qs").focus(), 0);
+  loadLedger().catch((e) => { if (String(e.message) === "auth") authFail(); else $("#qr").textContent = "장부를 못 불러왔어: " + e.message; });
+}
+function closeLedger() { $("#drw").hidden = true; }
+$("#ldgb").addEventListener("click", () => ($("#drw").hidden ? openLedger() : closeLedger()));
+$("#drx").addEventListener("click", closeLedger);
+["#qd", "#qg", "#qs"].forEach((s) => $(s).addEventListener("input", renderQw));
+$("#qa").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const qr = $("#qr"), b = $("#qb");
+  const day = $("#qd").value || todayKst(), subj = $("#qs").value.trim(), memo = $("#qm").value.trim();
+  if (!subj) { qr.className = "bad"; qr.textContent = "과목을 적어 줘"; $("#qs").focus(); return; }
+  const who = whoPreview();
+  b.disabled = true; qr.className = ""; qr.textContent = "기록 중…";
+  try {
+    const r = await post({ action: "outreach_add", who, grade: $("#qg").value, platform: $("#qp").value, variant: $("#qv").value, stated_problem: memo || undefined, sent_on: day });
+    L.rows.unshift({ id: r.row?.id ?? Date.now(), sent_on: r.row?.sent_on ?? day, who, grade: $("#qg").value, platform: $("#qp").value, variant: $("#qv").value, stated_problem: memo || null });
+    $("#qm").value = ""; qr.className = "good"; qr.textContent = `기록함 · ${who}`;
+    renderLedger(); renderQw(); $("#qm").focus();
+    loadLedger().catch(() => {});
+  } catch (err) { if (String(err.message) === "auth") return authFail(); qr.className = "bad"; qr.textContent = "안 됐어: " + err.message; }
+  finally { b.disabled = false; }
+});
+$("#lgl").addEventListener("click", async (e) => {
+  const st = e.target.closest(".st"), nb = e.target.closest("[data-note]");
+  const card = e.target.closest(".lr[data-id]"); if (!card) return;
+  const id = Number(card.dataset.id), r = L.rows.find((x) => x.id === id); if (!r) return;
+  if (st) {
+    const f = st.dataset.f, label = STEP_KO.find(([k]) => k === f)[1];
+    if (r[f] && !st.classList.contains("armed")) { st.classList.add("armed"); st.textContent = `${label} 지울까? 한 번 더`; setTimeout(() => { if (st.isConnected && st.classList.contains("armed")) { st.classList.remove("armed"); st.textContent = `${label} ${mdOf(r[f])}`; } }, 3000); return; }
+    st.disabled = true;
+    try {
+      const res = await post({ action: "outreach_mark", id, field: f, on: r[f] ? "clear" : "today" });
+      r[f] = res.row ? res.row[f] : (r[f] ? null : todayKst());
+      card.outerHTML = lrHtml(r); renderWeek();
+    } catch (err) { if (String(err.message) === "auth") return authFail(); st.disabled = false; st.textContent = "안 됨: " + err.message; }
+    return;
+  }
+  if (nb) {
+    const box = card.querySelector("[data-nf]");
+    if (box.innerHTML) { box.innerHTML = ""; return; }
+    box.innerHTML = `<form class="nf"><input name="o" maxlength="200" placeholder="반론(예: 비싸다)" value="${esc(r.objection || "")}"><input name="p" maxlength="300" placeholder="메모" value="${esc(r.post_note || "")}"><button type="submit">저장</button></form>`;
+    const f = box.querySelector("form"); f.querySelector("input").focus();
+    f.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const o = f.elements.o.value.trim(), p = f.elements.p.value.trim();
+      try { await post({ action: "outreach_note", id, objection: o || null, post_note: p || null }); r.objection = o || null; r.post_note = p || null; card.outerHTML = lrHtml(r); }
+      catch (err) { if (String(err.message) === "auth") return authFail(); f.querySelector("button").textContent = "안 됨"; }
+    });
+  }
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#drw").hidden && $("#lb").hidden) closeLedger(); });
 
 // ---------- 한 방 ----------
 function mergeThread(j, replaceDrafts) {
@@ -534,18 +788,26 @@ async function refreshAll(quiet) {
     if (S.open) await refreshRoom();
     S.lastPoll = new Date().toISOString();
     $("#poll").textContent = `${hm(S.lastPoll)}에 확인`;
+    if (Date.now() - L.loadedAt > 5 * 60e3) loadLedger().catch(() => {});
   } catch (e) { if (String(e.message) === "auth") return authFail(); if (!quiet) $("#poll").textContent = "확인 실패: " + e.message; }
 }
 $("#refresh").addEventListener("click", () => refreshAll(false));
 $("#logout").addEventListener("click", () => { key = ""; try { localStorage.removeItem("eye_key"); } catch (_) {} askKey(); });
-setInterval(() => { if (document.visibilityState === "visible" && key && $("#lb").hidden) refreshAll(true); }, POLL_MS);
+// 보고 있으면 20초마다 다 새로. 다른 창을 보고 있어도 알림이 켜져 있으면 방 목록만 읽어서 새 글을 알린다
+setInterval(() => {
+  if (!key) return;
+  if (document.visibilityState === "visible") { if ($("#lb").hidden) refreshAll(true); }
+  else if (notifyOn()) loadInbox().catch(() => {});
+}, POLL_MS);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && key) refreshAll(true); });
 
 (async function start() {
   $("#today").textContent = (() => { const d = ymd(new Date().toISOString()); return dayLabel(d); })();
+  renderNotifyBtn();
   if (!key) return askKey();
   $("#logout").hidden = false;
   $("#list").innerHTML = `<div class="loading">불러오는 중…</div>`;
+  loadLedger().catch(() => {});
   try {
     await loadInbox();
     S.lastPoll = new Date().toISOString(); $("#poll").textContent = `${hm(S.lastPoll)}에 확인`;
