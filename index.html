@@ -397,6 +397,11 @@ function tellsOf(text, x) {
   if (x.alias && !x.guardian && /주세요/.test(text)) out.push("학생에겐 '~해 주세요' 말고 '~해 줘요'");
   return out;
 }
+// 보낼 때 빈 줄마다 말풍선 하나로 나뉜다(서버 eye와 같은 규칙, 최대 4개)
+function bubbles(t) {
+  const ps = t.split(/\n[ \t]*\n+/).map((x) => x.trim()).filter(Boolean);
+  return ps.length <= 4 ? ps : [...ps.slice(0, 3), ps.slice(3).join("\n")];
+}
 function draftCard(x, withWho) {
   const when = `${esc(DK[x.kind] || x.kind)} · ${md(x.made_at)} ${hm(x.made_at)}`;
   if (x.sent_at) return `<div class="draft done"><div class="meta">${when}${x.sent_text === "" ? " · 버림" : ` · 보냄 ${hm(x.sent_at)}${x.sent_via === "대시보드" ? " (여기서)" : ""}`}</div>${x.sent_text === "" ? "" : `<div class="msg">${esc(x.sent_text || x.text)}</div>`}</div>`;
@@ -416,7 +421,8 @@ function bindDrafts(reload) {
     const sendB = card.querySelector("[data-send]");
     let timer = null;
     const disarm = () => { clearTimeout(timer); if (sendB && !sendB.disabled) { sendB.classList.remove("armed"); sendB.textContent = "카톡으로 보내기"; } };
-    const check = () => { const t = ta.value.trim(); card.querySelector(".cnt").textContent = `${t.length}자${t.length > 1000 ? " — 1000자까지" : ""}`;
+    const check = () => { const t = ta.value.trim(), bs = bubbles(t), long = bs.some((b) => b.length > 300);
+      card.querySelector(".cnt").textContent = `${t.length}자${bs.length > 1 ? ` · 말풍선 ${bs.length}개` : ""}${t.length > 1000 ? " — 1000자까지" : ""}${long ? " · 말풍선 하나가 길어요(빈 줄로 나누면 따로 나감)" : ""}`;
       const tl = tellsOf(t, x); card.querySelector(".tell").textContent = tl.length ? "AI 티: " + tl.join(" · ") : ""; };
     check();
     ta.addEventListener("input", () => { EDITS[id] = ta.value; saveEdits(); check(); disarm(); });
@@ -425,9 +431,17 @@ function bindDrafts(reload) {
     sendB?.addEventListener("click", async () => {
       const t = ta.value.trim();
       if (!t) { line.className = "msgline bad"; line.textContent = "글이 비었어"; return; }
-      if (!sendB.classList.contains("armed")) { sendB.classList.add("armed"); sendB.textContent = `한 번 더 누르면 보냄 · ${t.length}자`; timer = setTimeout(disarm, 5000); return; }
+      const nb = bubbles(t).length;
+      if (!sendB.classList.contains("armed")) { sendB.classList.add("armed"); sendB.textContent = `한 번 더 누르면 보냄 · ${nb > 1 ? `말풍선 ${nb}개` : `${t.length}자`}`; timer = setTimeout(disarm, 5000); return; }
       clearTimeout(timer); sendB.disabled = true; sendB.textContent = "보내는 중…"; line.className = "msgline"; line.textContent = "";
-      try { await post({ action: "draft_send", id, text: t }); sendB.classList.remove("armed"); sendB.textContent = "보냄 ✓"; done("카톡으로 나감 " + hm(new Date().toISOString())); }
+      try {
+        const res = await post({ action: "draft_send", id, text: t }); sendB.classList.remove("armed");
+        if (res.partial) { // 중간에 끊김: 간 것까지는 기록됨. 남은 말풍선은 칸에 남겨 복사해서 직접
+          sendB.textContent = "일부만 감"; ta.value = res.rest || ""; EDITS[id] = ta.value; saveEdits(); check();
+          line.className = "msgline bad"; line.textContent = res.warning || "일부만 나감 — 나머지는 복사해서 직접"; return;
+        }
+        sendB.textContent = "보냄 ✓"; done("카톡으로 나감 " + hm(new Date().toISOString()) + (res.bubbles > 1 ? ` · 말풍선 ${res.bubbles}개` : ""));
+      }
       catch (err) { sendB.classList.remove("armed"); fail(sendB, err, "카톡으로 보내기"); }
     });
     card.querySelector("[data-copy]")?.addEventListener("click", async (e) => {
