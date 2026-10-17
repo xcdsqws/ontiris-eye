@@ -131,6 +131,11 @@ details[open] summary{margin-bottom:8px}
 .recs{display:grid;gap:8px}
 .chk{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--ink-2)}
 .chk input{width:auto}
+.draft{background:var(--paper);border:1px solid var(--accent);border-radius:8px;padding:9px 12px;display:grid;gap:6px;min-width:0}
+.draft.done{border-color:var(--line);opacity:.75}
+.draft textarea{font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;min-height:6em;resize:vertical}
+.nameedit{display:flex;gap:6px;align-items:center}
+.nameedit input{font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:9em}
 @media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}.card:hover{border-color:var(--accent)}}
 </style></head><body>
 <div class="wrap">
@@ -154,6 +159,11 @@ try { key = localStorage.getItem("eye_key") || ""; } catch (_) {}
 let view = { name: "home" };
 
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+// 이름은 이 폰에만 저장된다(서버·DB·AI로 가지 않음). 화면에는 "이름 (별칭)"
+let NAMES = {};
+try { NAMES = JSON.parse(localStorage.getItem("eye_names") || "{}") || {}; } catch (_) {}
+const saveNames = () => { try { localStorage.setItem("eye_names", JSON.stringify(NAMES)); } catch (_) {} };
+const who = (u, alias) => NAMES[u] ? `${NAMES[u]} (${alias || u.slice(0, 4)})` : (alias || "새 방 " + u.slice(0, 4));
 const kst = (iso) => new Date(new Date(iso).getTime() + 9 * 3600e3);
 const hm = (iso) => kst(iso).toISOString().slice(11, 16);
 const md = (iso) => { const d = kst(iso); return `${d.getUTCMonth() + 1}/${d.getUTCDate()}`; };
@@ -357,11 +367,11 @@ async function home() {
   const order = (s) => (s.photos.today > 0 ? 0 : 1) * 1000 + (s.days_silent ?? 0);
   const items = d.students.sort((a, b) => order(a) - order(b)).map((s) => `
     <button class="card" type="button" data-u="${esc(s.user_key)}">
-      <div class="row"><span class="who">${esc(s.alias)}</span><span class="meta">${esc(s.grade || "")} · ${esc(s.subjects || "")}</span><span class="sp" style="flex:1"></span>${silentPill(s)}${s.photos.failed ? `<span class="pill warn">저장 실패 ${s.photos.failed}</span>` : ""}</div>
+      <div class="row"><span class="who">${esc(who(s.user_key, s.alias))}</span><span class="meta">${esc(s.grade || "")} · ${esc(s.subjects || "")}</span><span class="sp" style="flex:1"></span>${silentPill(s)}${s.photos.failed ? `<span class="pill warn">저장 실패 ${s.photos.failed}</span>` : ""}</div>
       ${s.model?.current_gap ? `<div class="gap"><span class="meta">넘을 곳</span> ${esc(s.model.current_gap)}</div>` : `<div class="gap meta">아직 모델 없음</div>`}
       ${s.model?.upcoming ? `<div class="gap"><span class="meta">다음</span> ${esc(s.model.upcoming)}</div>` : ""}
       ${s.preds_open?.length ? `<div class="gap"><span class="meta">예측</span> ${esc(s.preds_open[0].statement)}${s.preds_open[0].check_at ? ` <span class="meta">· ${esc(s.preds_open[0].check_at)}</span>` : ""}</div>` : ""}
-      <div class="row">${s.hyp?.cand ? `<span class="pill quiet">짐작 후보 ${s.hyp.cand}</span>` : ""}${s.preds_open?.length > 1 ? `<span class="pill quiet">예측 ${s.preds_open.length}</span>` : ""}${obsPill(s.observe)}${consentPill(s)}${s.unfollowed ? `<span class="pill warn">했는지 미기록 ${s.unfollowed}</span>` : ""}</div>
+      <div class="row">${s.hyp?.cand ? `<span class="pill quiet">짐작 후보 ${s.hyp.cand}</span>` : ""}${s.preds_open?.length > 1 ? `<span class="pill quiet">예측 ${s.preds_open.length}</span>` : ""}${obsPill(s.observe)}${consentPill(s)}${s.unfollowed ? `<span class="pill warn">했는지 미기록 ${s.unfollowed}</span>` : ""}${s.drafts_pending ? `<span class="pill">보낼 글 ${s.drafts_pending}</span>` : ""}</div>
       ${s.last_record ? `<div class="meta">마지막 자리 ${esc(s.last_record.on_date)} · ${esc(s.last_record.subject)} · ${esc(s.last_record.verdict || "")}</div>` : ""}
     </button>`).join("");
   const banners = [];
@@ -404,11 +414,22 @@ async function student(u, days = 14) {
       <textarea name="prescribed" placeholder="다음까지 하기로 정한 것 (학생이 할 행동 하나)" maxlength="300"></textarea>
       <textarea name="note" placeholder="메모 (실명 X)" maxlength="500"></textarea>
       <button class="btn sm wide" type="submit">기록</button></div><div class="msgline"></div></form></details>`;
+  const DK = { "질문 답": "질문 답", "한 줄": "아침 한 줄", "카톡 문제": "카톡 문제", "인사": "인사" };
+  const pend = (d.drafts || []).filter((x) => !x.sent_at), doneD = (d.drafts || []).filter((x) => x.sent_at);
+  const draftCard = (x) => `<div class="draft ${x.sent_at ? "done" : ""}" data-draft="${x.id}">
+      <div class="meta">${esc(DK[x.kind] || x.kind)} · ${md(x.made_at)} ${hm(x.made_at)}${x.sent_at ? (x.sent_text === "" ? " · 버림" : " · 보냄 " + hm(x.sent_at)) : ""}</div>
+      ${x.sent_at ? `<div class="msg">${esc(x.sent_text || x.text)}</div>` : `<textarea>${esc(x.text)}</textarea>
+      <div class="acts"><button type="button" class="act" data-copy="1">복사</button><button type="button" class="act" data-sent="1">보냄 (고친 글로 기록)</button><button type="button" class="act" data-skip="1">버림</button></div><div class="msgline"></div>`}</div>`;
+  const drafts_html = pend.length || doneD.length ? `<section class="sec"><h3>보낼 글<span class="n">${pend.length ? pend.length + "개 대기" : "대기 없음"}</span></h3>
+    <div class="recs">${pend.map(draftCard).join("")}</div>
+    ${doneD.length ? `<details><summary>보낸·버린 초안 ${doneD.length}</summary><div class="recs">${doneD.map(draftCard).join("")}</div></details>` : ""}</section>` : "";
   const consent_html = m.consent_on ? `<div class="consent"><span class="pill">동의 ${esc(m.consent_on.slice(5).replace("-", "/"))}</span></div>`
     : `<div class="consent"><span class="pill ${d.ai_ok ? "quiet" : "warn"}">${d.ai_ok ? "동의 전 · 10/31까지 유예" : "동의 전 · 사진을 AI가 읽지 않음"}</span><button type="button" class="act" id="consentbtn">'네' 받음 (오늘)</button></div>`;
   main.innerHTML = `
     <button class="back" type="button" id="back">← 전체</button>
-    <div class="head"><h2>${esc(m.alias || ("새 방 " + m.user_key.slice(0, 4)))}</h2><div class="meta">${esc(m.grade || "")} · ${esc(m.subjects || "")} · ${esc(m.status)}${m.note ? ` · ${esc(m.note)}` : ""}</div>${m.alias ? consent_html : ""}</div>
+    <div class="head"><h2>${esc(who(m.user_key, m.alias))}</h2>
+      <div class="nameedit"><input id="namein" placeholder="이름(이 폰에만)" maxlength="10" value="${esc(NAMES[m.user_key] || "")}" autocomplete="off"><button type="button" class="act" id="namesave">이름 저장</button></div><div class="meta">${esc(m.grade || "")} · ${esc(m.subjects || "")} · ${esc(m.status)}${m.note ? ` · ${esc(m.note)}` : ""}</div>${m.alias ? consent_html : ""}</div>
+    ${drafts_html}
     ${model_html ? `<section class="sec"><h3>모델</h3><div class="model">${model_html}</div></section>` : ""}
     <section class="sec"><h3>짐작<span class="n">${d.hypotheses.filter((h) => h.status === "지금" || h.status === "후보").length}개 살아 있음</span></h3>${hypsHtml(d.hypotheses)}</section>
     <section class="sec"><h3>예측</h3>${predsHtml(d.predictions)}</section>
@@ -425,6 +446,25 @@ async function student(u, days = 14) {
 // 학생 화면의 쓰기: 동의 · 짐작 승인(두 번 눌러 확정) · 예측 확인 · 했나 · 자리 한 줄
 function bindStudent(u, days) {
   const reload = () => go({ name: "student", u, days });
+  $("#namesave")?.addEventListener("click", () => { const v = $("#namein").value.trim(); if (v) NAMES[u] = v; else delete NAMES[u]; saveNames(); reload(); });
+  main.querySelectorAll("[data-draft]").forEach((card) => {
+    const id = Number(card.dataset.draft), ta = card.querySelector("textarea"), line = card.querySelector(".msgline");
+    if (!ta) return;
+    card.querySelector("[data-copy]")?.addEventListener("click", async (e) => {
+      try { await navigator.clipboard.writeText(ta.value); e.currentTarget.textContent = "복사됨"; }
+      catch (_) { ta.select(); try { document.execCommand("copy"); e.currentTarget.textContent = "복사됨"; } catch (__) { line.textContent = "길게 눌러 복사해 줘"; } }
+    });
+    card.querySelector("[data-sent]")?.addEventListener("click", async (e) => {
+      const b = e.currentTarget; b.disabled = true;
+      try { await post({ action: "draft_done", id, text: ta.value }); reload(); } catch (err) { fail(b, err); }
+    });
+    card.querySelector("[data-skip]")?.addEventListener("click", async (e) => {
+      const b = e.currentTarget;
+      if (!b.classList.contains("armed")) { b.classList.add("armed"); b.textContent = "한 번 더 누르면 버림"; return; }
+      b.disabled = true;
+      try { await post({ action: "draft_done", id, skip: true }); reload(); } catch (err) { fail(b, err); }
+    });
+  });
   const fail = (b, err) => { if (String(err.message) === "auth") return go({ name: "home" }); b.disabled = false; b.textContent = "안 됨: " + err.message; };
   $("#consentbtn")?.addEventListener("click", async (e) => { const b = e.currentTarget; b.disabled = true; try { await post({ action: "consent", u }); reload(); } catch (err) { fail(b, err); } });
   main.querySelectorAll("[data-hyp]").forEach((b) => b.addEventListener("click", async () => {
