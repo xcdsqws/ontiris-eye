@@ -455,7 +455,8 @@ async function home() {
   $("#today").textContent = d.today.replace(/-/g, ".");
   $("#logout").hidden = false;
   const order = (s) => (s.photos.today > 0 ? 0 : 1) * 1000 + (s.days_silent ?? 0);
-  const items = d.students.sort((a, b) => order(a) - order(b)).map((s) => `
+  // 끝난 방(옮겨 간 수동 키 등)과 보호자 방은 학생 목록에서 뺀다 — 보호자 방 글은 '보낼 글'에 그대로 뜬다
+  const items = d.students.filter((s) => s.status !== "left" && !(s.guardian_of && s.guardian_of !== s.user_key)).sort((a, b) => order(a) - order(b)).map((s) => `
     <button class="card" type="button" data-u="${esc(s.user_key)}">
       <div class="row"><span class="who">${esc(who(s.user_key, s.alias))}</span><span class="meta">${esc(s.grade || "")} · ${esc(s.subjects || "")}</span><span class="sp" style="flex:1"></span>${silentPill(s)}${s.photos.failed ? `<span class="pill warn">저장 실패 ${s.photos.failed}</span>` : ""}</div>
       ${s.model?.current_gap ? `<div class="gap"><span class="meta">넘을 곳</span> ${esc(s.model.current_gap)}</div>` : `<div class="gap meta">아직 모델 없음</div>`}
