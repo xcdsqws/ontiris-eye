@@ -140,6 +140,7 @@ details[open] summary{margin-bottom:8px}
 .draft .cnt{font-size:11.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .draft .tell{font-size:12.5px;color:var(--warn);word-break:break-word}
 .draft .tell:empty,.draft .err:empty{display:none}
+.draft .already{font-size:12.5px;color:var(--warn);word-break:break-word}
 .draft .err{font-size:12.5px;color:var(--warn);word-break:break-word}
 .act.send{background:var(--accent);color:var(--accent-ink);border-color:transparent;font-weight:600}
 .act.send.armed{background:var(--warn);color:#fff}
@@ -409,7 +410,7 @@ function draftCard(x, withWho) {
   return `<div class="draft" data-draft="${x.id}" data-guardian="${x.guardian ? 1 : 0}" data-alias="${esc(x.alias || "")}">
     <div class="meta">${head}${when}</div>
     <textarea aria-label="보낼 글">${esc(EDITS[x.id] ?? x.text)}</textarea>
-    <div class="cnt"></div><div class="tell"></div>${x.send_error ? `<div class="err">지난번엔 안 갔어: ${esc(x.send_error)}</div>` : ""}
+    <div class="cnt"></div><div class="tell"></div>${x.send_error ? `<div class="err">지난번엔 안 갔어: ${esc(x.send_error)}</div>` : ""}${x.agent_after ? `<div class="already">이 방에 ${md(x.agent_after)} ${hm(x.agent_after)}에 보낸 글이 있어 — 이 글을 이미 디스코드로 보냈으면 '직접 보냈음'</div>` : ""}
     <div class="acts">${x.channel === false ? "" : `<button type="button" class="act send" data-send="1">카톡으로 보내기</button>`}<button type="button" class="act" data-copy="1">복사</button><button type="button" class="act" data-sent="1">직접 보냈음</button><button type="button" class="act" data-skip="1">버림</button>${withWho ? `<button type="button" class="act" data-open="${esc(x.user_key)}">학생 화면</button>` : ""}</div>
     <div class="msgline"></div></div>`;
 }
