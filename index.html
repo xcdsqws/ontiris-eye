@@ -119,6 +119,18 @@ details[open] summary{margin-bottom:8px}
 .steps{display:flex;flex-wrap:wrap;gap:6px}
 .step{font-size:12.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2);font-variant-numeric:tabular-nums}
 .step.on{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+/* 승인·이행 버튼 */
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.act{font-size:12.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2);background:var(--bg)}
+.act.on{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+.act.armed{background:var(--warn-bg);color:var(--warn);border-color:transparent}
+.consent{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:13px}
+.recrow{display:grid;gap:4px;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:13.5px;min-width:0}
+.recrow .m{color:var(--ink-2);font-size:12.5px;word-break:break-word}
+.recrow .p{word-break:break-word}
+.recs{display:grid;gap:8px}
+.chk{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--ink-2)}
+.chk input{width:auto}
 @media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}.card:hover{border-color:var(--accent)}}
 </style></head><body>
 <div class="wrap">
@@ -187,6 +199,7 @@ function roomsHtml(rooms) {
         <input name="grade" placeholder="학년 (예: 고2)" maxlength="20" autocomplete="off">
         <input name="subjects" placeholder="과목 (예: 수학·영어)" maxlength="40" autocomplete="off">
         <select name="status"><option value="trial">체험</option><option value="member">회원(기존 수업)</option><option value="contact">상담 전</option></select>
+        <label class="chk wide"><input type="checkbox" name="consent" value="1"> 약속 한 장·자료 안내에 '네' 받음 (없으면 사진을 AI가 안 읽음)</label>
         <button class="btn sm wide" type="submit">등록</button>
       </div><div class="msgline"></div></form>`).join("")}</div>`;
 }
@@ -197,7 +210,7 @@ function bindRooms() {
       e.preventDefault();
       const fd = new FormData(f), line = f.querySelector(".msgline");
       line.className = "msgline"; line.textContent = "저장 중…";
-      try { await post({ action: "register", u: f.dataset.u, alias: fd.get("alias"), grade: fd.get("grade"), subjects: fd.get("subjects"), status: fd.get("status") }); go({ name: "home" }); }
+      try { await post({ action: "register", u: f.dataset.u, alias: fd.get("alias"), grade: fd.get("grade"), subjects: fd.get("subjects"), status: fd.get("status"), consent: fd.get("consent") === "1" }); go({ name: "home" }); }
       catch (err) { if (String(err.message) === "auth") return go({ name: "home" }); line.className = "msgline bad"; line.textContent = "안 됐어: " + err.message; }
     });
   });
@@ -274,15 +287,23 @@ function obsPill(o) {
   if (o.waiting) return `<span class="pill quiet">읽을 사진 ${o.waiting}</span>`;
   return "";
 }
+function consentPill(s) {
+  if (s.consent_on) return "";
+  if (!s.ai_ok) return `<span class="pill warn">동의 전 · AI 안 읽음${s.observe?.held ? " " + s.observe.held + "장 대기" : ""}</span>`;
+  return `<span class="pill quiet">동의 전 (10/31까지)</span>`;
+}
 
 const H_ORDER = ["지금", "후보", "넘음", "버림"];
 const H_CLASS = { "지금": "now", "후보": "", "넘음": "cross", "버림": "drop" };
+const H_NEXT = { "후보": [["지금", "지금으로 (승인)"], ["버림", "버림"]], "지금": [["넘음", "넘었다"], ["버림", "틀렸다 · 버림"]] };
 function hypCard(h) {
+  const acts = (H_NEXT[h.status] || []).map(([st, l]) => `<button type="button" class="act" data-hyp="${h.id}" data-st="${st}">${l}</button>`).join("");
   return `<div class="hyp ${H_CLASS[h.status] || ""}">
     <div class="st">${esc(h.status)} · ${md(h.updated_at || h.created_at)}</div>
     <div class="s">${esc(h.statement)}</div>
     ${h.evidence ? `<div class="e">근거 · ${esc(h.evidence)}</div>` : ""}
-    ${h.reason ? `<div class="r">${esc(h.reason)}</div>` : ""}</div>`;
+    ${h.reason ? `<div class="r">${esc(h.reason)}</div>` : ""}
+    ${acts ? `<div class="acts">${acts}</div>` : ""}</div>`;
 }
 function hypsHtml(list) {
   if (!list.length) return `<div class="meta">아직 짐작 없음</div>`;
@@ -299,7 +320,8 @@ function predsHtml(list) {
   const pill = (o) => o === "맞음" ? `<span class="pill">맞음</span>` : o === "틀림" ? `<span class="pill warn">틀림</span>` : `<span class="pill quiet">${esc(o)}</span>`;
   return `${done.length ? `<div class="tally">지금까지 맞음 ${n("맞음")} · 틀림 ${n("틀림")}${n("모름") ? ` · 모름 ${n("모름")}` : ""}</div>` : ""}
     <div class="preds">
-      ${open.map((p) => `<div class="pred"><span class="pill quiet">기다림</span><span class="s">${esc(p.statement)}</span><span class="w">${esc(p.check_at || "")}</span></div>`).join("")}
+      ${open.map((p) => `<div class="pred" style="flex-wrap:wrap"><span class="pill quiet">기다림</span><span class="s">${esc(p.statement)}</span><span class="w">${esc(p.check_at || "")}</span>
+        <div class="acts" style="flex-basis:100%">${["맞음", "틀림", "모름"].map((o) => `<button type="button" class="act" data-pred="${p.id}" data-o="${o}">${o}</button>`).join("")}</div></div>`).join("")}
       ${done.map((p) => `<div class="pred">${pill(p.outcome)}<span class="s">${esc(p.statement)}${p.note ? ` <span class="meta">· ${esc(p.note)}</span>` : ""}</span><span class="w">${esc(p.checked_on || p.made_on || "")}</span></div>`).join("")}
     </div>`;
 }
@@ -339,10 +361,14 @@ async function home() {
       ${s.model?.current_gap ? `<div class="gap"><span class="meta">넘을 곳</span> ${esc(s.model.current_gap)}</div>` : `<div class="gap meta">아직 모델 없음</div>`}
       ${s.model?.upcoming ? `<div class="gap"><span class="meta">다음</span> ${esc(s.model.upcoming)}</div>` : ""}
       ${s.preds_open?.length ? `<div class="gap"><span class="meta">예측</span> ${esc(s.preds_open[0].statement)}${s.preds_open[0].check_at ? ` <span class="meta">· ${esc(s.preds_open[0].check_at)}</span>` : ""}</div>` : ""}
-      <div class="row">${s.hyp?.cand ? `<span class="pill quiet">짐작 후보 ${s.hyp.cand}</span>` : ""}${s.preds_open?.length > 1 ? `<span class="pill quiet">예측 ${s.preds_open.length}</span>` : ""}${obsPill(s.observe)}</div>
+      <div class="row">${s.hyp?.cand ? `<span class="pill quiet">짐작 후보 ${s.hyp.cand}</span>` : ""}${s.preds_open?.length > 1 ? `<span class="pill quiet">예측 ${s.preds_open.length}</span>` : ""}${obsPill(s.observe)}${consentPill(s)}${s.unfollowed ? `<span class="pill warn">했는지 미기록 ${s.unfollowed}</span>` : ""}</div>
       ${s.last_record ? `<div class="meta">마지막 자리 ${esc(s.last_record.on_date)} · ${esc(s.last_record.subject)} · ${esc(s.last_record.verdict || "")}</div>` : ""}
     </button>`).join("");
-  const banner = d.observe?.last_error ? `<div class="banner">사진 읽기가 막혀 있어: ${esc(d.observe.last_error)}</div>` : "";
+  const banners = [];
+  if (d.observe?.last_error) banners.push(`사진 읽기가 막혀 있어: ${esc(d.observe.last_error)}`);
+  if (d.observe?.stalled_min) banners.push(`사진 읽기가 ${d.observe.stalled_min}분째 안 돌고 있어 (자동 읽기 멈춤 의심)`);
+  (d.runs_stale || []).forEach((r) => banners.push(`${esc(r.name)}이 ${r.hours == null ? "기록이 없어" : r.hours + "시간째 안 돌았어"} — 예약 작업 확인`));
+  const banner = banners.map((b) => `<div class="banner">${b}</div>`).join("");
   main.innerHTML = `${banner}${stripHtml(d.tally, true)}${roomsHtml(d.new_rooms)}<div class="list">${items || `<div class="empty">아직 별칭이 붙은 학생이 없어.</div>`}</div>`;
   main.querySelectorAll(".card").forEach((b) => b.addEventListener("click", () => go({ name: "student", u: b.dataset.u })));
   $("#strip")?.addEventListener("click", () => go({ name: "ledger" }));
@@ -362,20 +388,65 @@ async function student(u, days = 14) {
         : `<a class="pending" href="#">${p.status === "failed" ? "저장 실패" : "처리 중"}</a>`).join("")}</div></div>`).join("");
   const model_html = ["current_gap:넘을 한 곳", "how_solving:푸는 방식", "next_risk:다음에 걸릴 것", "upcoming:앞에 있는 것"].map((kv) => { const [k, l] = kv.split(":"); return mo[k] ? `<div><div class="k">${l}${k === "current_gap" && mo.gap_since ? ` · ${esc(mo.gap_since)}부터 · ${mo.gap_hits ?? 0}번 걸림` : ""}</div><div class="v">${esc(mo[k])}</div></div>` : ""; }).join("");
   const msgs_html = d.messages.slice(0, 40).map((x) => `<div class="msg ${x.kind === "agent" ? "agent" : ""}"><span class="t">${md(x.sent_at)} ${hm(x.sent_at)}${x.kind === "agent" ? " · 나" : ""}</span>${esc(x.text)}</div>`).join("");
-  const recs_html = d.records.length ? `<div class="tbl"><table><tr><th>날짜</th><th>과목</th><th>넘으려던 것</th><th>판정</th><th>분</th></tr>${d.records.map((r) => `<tr><td>${esc(r.on_date)}</td><td>${esc(r.subject)}</td><td>${esc(r.target)}</td><td>${esc(r.verdict || "")}</td><td>${esc(r.minutes ?? "")}</td></tr>`).join("")}</table></div>` : `<div class="meta">아직 기록 없음</div>`;
+  const FOL = ["했다", "일부", "안 했다", "모름"];
+  const recs_html = (d.records.length ? `<div class="recs">${d.records.map((r) => `<div class="recrow">
+      <div class="m">${esc(r.on_date.slice(5).replace("-", "/"))} · ${esc(r.subject || "")}${r.verdict ? " · 판정 " + esc(r.verdict) : ""}${r.minutes != null ? " · " + esc(r.minutes) + "분" : ""}</div>
+      ${r.target ? `<div class="p">${esc(r.target)}</div>` : ""}
+      ${r.prescribed ? `<div class="p"><span class="meta">정한 것</span> ${esc(r.prescribed)}</div>
+        <div class="acts"><span class="meta" style="align-self:center">했나</span>${FOL.map((v) => `<button type="button" class="act ${r.followed === v ? "on" : ""}" data-rec="${r.id}" data-v="${r.followed === v ? "clear" : v}">${v}</button>`).join("")}</div>` : ""}
+      ${r.note ? `<div class="m">${esc(r.note)}</div>` : ""}</div>`).join("")}</div>` : `<div class="meta">아직 기록 없음</div>`) + `
+    <details ${d.records.length ? "" : "open"}><summary>자리 한 줄 남기기</summary>
+    <form id="recform" class="lgr"><div class="f">
+      <input name="subject" placeholder="과목" maxlength="20" required autocomplete="off">
+      <select name="verdict"><option value="">판정 —</option><option>넘었다</option><option>아직</option><option>모름</option></select>
+      <input name="minutes" type="number" min="0" max="600" inputmode="numeric" placeholder="분" autocomplete="off">
+      <textarea name="target" placeholder="넘으려던 것 / 확인한 것 (짐작 한 줄)" maxlength="300"></textarea>
+      <textarea name="prescribed" placeholder="다음까지 하기로 정한 것 (학생이 할 행동 하나)" maxlength="300"></textarea>
+      <textarea name="note" placeholder="메모 (실명 X)" maxlength="500"></textarea>
+      <button class="btn sm wide" type="submit">기록</button></div><div class="msgline"></div></form></details>`;
+  const consent_html = m.consent_on ? `<div class="consent"><span class="pill">동의 ${esc(m.consent_on.slice(5).replace("-", "/"))}</span></div>`
+    : `<div class="consent"><span class="pill ${d.ai_ok ? "quiet" : "warn"}">${d.ai_ok ? "동의 전 · 10/31까지 유예" : "동의 전 · 사진을 AI가 읽지 않음"}</span><button type="button" class="act" id="consentbtn">'네' 받음 (오늘)</button></div>`;
   main.innerHTML = `
     <button class="back" type="button" id="back">← 전체</button>
-    <div class="head"><h2>${esc(m.alias || ("새 방 " + m.user_key.slice(0, 4)))}</h2><div class="meta">${esc(m.grade || "")} · ${esc(m.subjects || "")} · ${esc(m.status)}${m.note ? ` · ${esc(m.note)}` : ""}</div></div>
+    <div class="head"><h2>${esc(m.alias || ("새 방 " + m.user_key.slice(0, 4)))}</h2><div class="meta">${esc(m.grade || "")} · ${esc(m.subjects || "")} · ${esc(m.status)}${m.note ? ` · ${esc(m.note)}` : ""}</div>${m.alias ? consent_html : ""}</div>
     ${model_html ? `<section class="sec"><h3>모델</h3><div class="model">${model_html}</div></section>` : ""}
     <section class="sec"><h3>짐작<span class="n">${d.hypotheses.filter((h) => h.status === "지금" || h.status === "후보").length}개 살아 있음</span></h3>${hypsHtml(d.hypotheses)}</section>
     <section class="sec"><h3>예측</h3>${predsHtml(d.predictions)}</section>
     <section class="sec"><h3>관찰<span class="n">최근 ${d.days}일 · ${d.observations.filter((o) => o.mark !== "장 요약").length}줄</span></h3>${obsHtml(d.observations)}</section>
     <section class="sec"><h3>들어온 사진 · 최근 ${d.days}일 · ${d.photos.length}장 <button type="button" id="more" style="color:var(--accent);margin-left:8px">${d.days < 90 ? "더 보기" : ""}</button></h3>${days_html || `<div class="meta">없음</div>`}</section>
     <section class="sec"><h3>글</h3><div class="msgs">${msgs_html || `<div class="meta">없음</div>`}</div></section>
-    <section class="sec"><h3>자리 기록</h3>${recs_html}</section>`;
+    <section class="sec"><h3>자리 기록 · 정한 것 · 했나</h3>${recs_html}</section>`;
   $("#back").addEventListener("click", () => go({ name: "home" }));
+  bindStudent(u, days);
   $("#more")?.addEventListener("click", () => go({ name: "student", u, days: Math.min(90, days * 3) }));
   window.scrollTo(0, 0);
+}
+
+// 학생 화면의 쓰기: 동의 · 짐작 승인(두 번 눌러 확정) · 예측 확인 · 했나 · 자리 한 줄
+function bindStudent(u, days) {
+  const reload = () => go({ name: "student", u, days });
+  const fail = (b, err) => { if (String(err.message) === "auth") return go({ name: "home" }); b.disabled = false; b.textContent = "안 됨: " + err.message; };
+  $("#consentbtn")?.addEventListener("click", async (e) => { const b = e.currentTarget; b.disabled = true; try { await post({ action: "consent", u }); reload(); } catch (err) { fail(b, err); } });
+  main.querySelectorAll("[data-hyp]").forEach((b) => b.addEventListener("click", async () => {
+    if (!b.classList.contains("armed")) { main.querySelectorAll(".act.armed").forEach((x) => { x.classList.remove("armed"); x.textContent = x.dataset.l; });
+      b.dataset.l = b.textContent; b.classList.add("armed"); b.textContent = "한 번 더 누르면 확정"; return; }
+    b.disabled = true;
+    try { await post({ action: "hyp_set", id: Number(b.dataset.hyp), status: b.dataset.st }); reload(); } catch (err) { fail(b, err); }
+  }));
+  main.querySelectorAll("[data-pred]").forEach((b) => b.addEventListener("click", async () => {
+    b.disabled = true; try { await post({ action: "pred_mark", id: Number(b.dataset.pred), outcome: b.dataset.o }); reload(); } catch (err) { fail(b, err); }
+  }));
+  main.querySelectorAll("[data-rec]").forEach((b) => b.addEventListener("click", async () => {
+    b.disabled = true; try { await post({ action: "record_followed", id: Number(b.dataset.rec), value: b.dataset.v }); reload(); } catch (err) { fail(b, err); }
+  }));
+  const f = $("#recform");
+  f?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(f), line = f.querySelector(".msgline");
+    line.className = "msgline"; line.textContent = "저장 중…";
+    try { await post({ action: "record_add", u, subject: fd.get("subject"), verdict: fd.get("verdict") || null, minutes: fd.get("minutes"), target: fd.get("target"), prescribed: fd.get("prescribed"), note: fd.get("note") }); reload(); }
+    catch (err) { if (String(err.message) === "auth") return go({ name: "home" }); line.className = "msgline bad"; line.textContent = "안 됐어: " + err.message; }
+  });
 }
 
 async function go(v) {
