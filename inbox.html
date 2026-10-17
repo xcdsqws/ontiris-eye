@@ -193,6 +193,42 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible{
 .nf{display:grid;grid-template-columns:1fr 1fr auto;gap:6px}
 .nf input{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink);min-width:0}
 .nf button{font-size:13px;padding:4px 12px;border-radius:7px;border:1px solid var(--line);background:var(--paper)}
+/* 할 일(10/18): 사람이 닫아야 하는 고리 — 판단할 것 · 확인할 것 · 이번 주 숫자 */
+.bar .ldg b.due{color:var(--warn)}
+.drw.td{grid-template-rows:auto auto 1fr}
+.dhd .rng.ok{color:var(--ok)}
+.tdn{display:grid;gap:3px;padding:2px 20px 12px;border-bottom:1px solid var(--line)}
+.tdn .nl{display:flex;gap:10px;align-items:flex-start;font-size:13px;min-width:0;line-height:1.45}
+.tdn .nl .k{color:var(--ink-2);white-space:nowrap;min-width:78px}
+.tdn .nl .v{min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-variant-numeric:tabular-nums}
+.tdn .nl .v.w{color:var(--warn)}
+.tdl{overflow-y:auto;min-height:0;padding:2px 20px 40px}
+.tdl h3{font-size:12px;letter-spacing:.06em;color:var(--ink-2);font-weight:600;margin:18px 0 0;display:flex;gap:6px;align-items:baseline}
+.tdl h3 b{color:var(--warn);font-variant-numeric:tabular-nums}
+.tdl h4{font-size:12px;color:var(--ink-2);font-weight:500;margin:18px 0 0}
+.ti{padding:10px 0;border-bottom:1px solid var(--line);display:grid;gap:6px}
+.ti .t1{display:flex;gap:8px;align-items:baseline;min-width:0}
+.tdnm{font-weight:600;font-size:14.5px;white-space:nowrap;border-bottom:1px dotted var(--ink-2);line-height:1.3}
+.tdnm:hover{color:var(--accent);border-color:var(--accent)}
+.ti .tk{font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.ti .tk.w{color:var(--warn)}
+.ti .x{margin-left:auto;font-size:12px;color:var(--ink-2);white-space:nowrap}
+.ti .x:hover{color:var(--ink)}
+.ti .tx,.si .tx{font-size:13.5px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.ti .tx.q,.si .tx.q{color:var(--ink-2);font-size:12.5px;-webkit-line-clamp:2}
+.ti.wait{opacity:.72}
+.ti .sub{display:grid;margin-left:2px;border-left:2px solid var(--line);padding-left:12px}
+.ti .sub[hidden]{display:none}
+.si{padding:8px 0;border-bottom:1px dashed var(--line);display:grid;gap:5px}
+.si:last-child{border-bottom:0}
+.nf1{display:grid;grid-template-columns:1fr auto;gap:6px}
+.nf1 input{font:inherit;font-size:13.5px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink);min-width:0}
+.nf1 input:focus-visible{outline:none;border-color:var(--accent)}
+.nf1 button{font-size:13px;padding:5px 14px;border-radius:7px;background:var(--accent);color:var(--accent-ink);font-weight:600;white-space:nowrap}
+.ti .er,.si .er{font-size:12.5px;color:var(--warn)}
+.tdl .none{font-size:13px;color:var(--ink-2);padding:8px 0}
+.st.dn{color:var(--warn)}
+.st.dn:hover:not(:disabled){border-color:var(--warn);color:var(--warn)}
 @media (max-width:1100px){.panes{grid-template-columns:290px 1fr}.b{max-width:80%}}
 @media (max-width:760px){
   .panes{grid-template-columns:1fr}
@@ -215,6 +251,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible{
     <span class="date" id="today"></span>
     <span class="sp"></span>
     <button type="button" class="ldg" id="ldgb" title="장부 열기 — 제안 보낸 것 기록">이번 주 제안 <b id="wkn">–</b><span class="k">/20 · 장부</span></button>
+    <button type="button" class="ldg" id="todob" title="할 일 열기 — 판단할 것·확인할 것">할 일 <b id="todon">–</b></button>
     <span class="poll" id="poll"></span>
     <button type="button" class="tg" id="ntfb" aria-pressed="false">알림 켜기</button>
     <button type="button" class="tg" id="sndb" aria-pressed="true" hidden>소리 켬</button>
@@ -248,6 +285,11 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible{
     <div class="ft"><span id="qw"></span><span class="sp"></span><span id="qr"></span></div>
   </form>
   <div class="lgl" id="lgl"></div>
+</aside>
+<aside class="drw td" id="tdw" hidden aria-label="할 일">
+  <div class="dhd"><h2>할 일</h2><span class="rng" id="tdr"></span><span class="sp"></span><button type="button" id="tdx">닫기 (Esc)</button></div>
+  <div class="tdn" id="tdn"></div>
+  <div class="tdl" id="tdl"><div class="loading">불러오는 중…</div></div>
 </aside>
 
 <script>
@@ -521,6 +563,137 @@ $("#lgl").addEventListener("click", async (e) => {
 });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#drw").hidden && $("#lb").hidden) closeLedger(); });
 
+// ---------- 할 일: 판단할 것 · 확인할 것 — 사람이 닫아야 하는 고리만(10/18) ----------
+// 짐작 확정·버림, 정한 것, 했나, 예측 확인을 여기서 닫는다. 이유·한 줄은 덮지 않고 이어 붙인다(서버). 실명은 쓰지 않는다
+const T = { d: null, loadedAt: 0, openCand: new Set() };
+const FOLLOW_KO = ["했다", "일부", "안 했다", "모름"];
+const OUT_KO = ["맞음", "틀림", "모름"];
+function candGroups(d) { const g = new Map(); (d.hyp_cand || []).forEach((h) => { if (!g.has(h.user_key)) g.set(h.user_key, []); g.get(h.user_key).push(h); }); return g; }
+function todoCount(d) {
+  if (!d) return null;
+  return d.hyp_now.length + candGroups(d).size + d.rec_noplan.length
+    + d.rec_unfollowed.filter((r) => r.due).length + d.checks_due.length + d.preds_open.filter((p) => p.due).length;
+}
+function renderTodoBtn() { const n = todoCount(T.d), b = $("#todon"); b.textContent = n == null ? "–" : String(n); b.className = n ? "due" : ""; }
+const nmBtn = (it) => `<button type="button" class="tdnm" data-open="${esc(it.user_key)}" title="이 학생 대화 열기">${esc(nameOf(it.user_key, it.alias))}</button>${it.guardian ? '<span class="tag">보호자</span>' : ""}`;
+function tdNums(d) {
+  const L1 = [["제안", `${d.week.sent}/20 · 이번 주 ${mdOf(d.week.from)}~${mdOf(d.week.to)}`, d.week.sent < 20]];
+  (d.ten || []).forEach((t) => L1.push([`10시 답 ${t.who || ""}`.trim(), t.value || "-", /답 없음 [1-9]|늦게 답 [1-9]/.test(t.value || "")]));
+  const o = d.observe || {};
+  L1.push(["사진 판독", `대기 ${o.waiting || 0} · 오류 ${o.error || 0} · 멈춤 ${o.stopped || 0} · 동의 전 ${o.held || 0}`, (o.error || 0) + (o.stopped || 0) > 0]);
+  return L1.map(([k, v, w]) => `<div class="nl"><span class="k">${esc(k)}</span><span class="v${w ? " w" : ""}" title="${esc(v)}">${esc(v)}</span></div>`).join("");
+}
+const tdItem = (k, it, inner) => `<div class="ti${it.wait ? " wait" : ""}" data-k="${k}" data-id="${it.id}" data-u="${esc(it.user_key)}">${inner}<div data-f></div></div>`;
+const followHtml = (r) => tdItem("rf", { ...r, wait: !r.due }, `<div class="t1">${nmBtn(r)}<span class="tk${r.due ? " w" : ""}">${mdOf(r.on_date)}에 정한 것 — 했나?${r.due ? "" : " · 아직 다음 자리 전"}</span></div>
+    <div class="tx" title="${esc(r.prescribed)}">${esc(r.prescribed)}</div>
+    <div class="stp">${FOLLOW_KO.map((v) => `<button type="button" class="st" data-a="follow" data-v="${v}">${v}</button>`).join("")}</div>`);
+const predHtml = (p) => tdItem("pd", { ...p, wait: !p.due }, `<div class="t1">${nmBtn(p)}<span class="tk${p.due ? " w" : ""}">예측 · 확인 때: ${esc(p.check_at || "-")}</span></div>
+    <div class="tx" title="${esc(p.statement)}">${esc(p.statement)}</div>
+    <div class="stp">${OUT_KO.map((v) => `<button type="button" class="st" data-a="pred" data-v="${v}">${v}</button>`).join("")}</div>`);
+function renderTodo() {
+  renderTodoBtn();
+  const d = T.d; if (!d || $("#tdw").hidden) return;
+  if (!$("#tdr").classList.contains("ok")) $("#tdr").textContent = `오늘 ${mdOf(d.today)}`;
+  $("#tdn").innerHTML = tdNums(d);
+  const judge = [], check = [], wait = [];
+  d.hyp_now.forEach((h) => judge.push(tdItem("hn", h, `<div class="t1">${nmBtn(h)}<span class="tk">지금 짐작${h.now_on ? " · " + mdOf(h.now_on) + "부터" : ""} — 확정 전</span></div>
+    <div class="tx" title="${esc(h.statement)}">${esc(h.statement)}</div>
+    <div class="stp"><button type="button" class="st" data-a="confirm">맞아, 확정</button><button type="button" class="st dn" data-a="drop">버림</button></div>`)));
+  const groups = candGroups(d);
+  groups.forEach((hs, u) => {
+    const open = T.openCand.has(u);
+    judge.push(`<div class="ti grp" data-k="hc" data-u="${esc(u)}"><div class="t1">${nmBtn(hs[0])}<span class="tk">후보 짐작 ${hs.length}개 — 지금으로 올릴지, 버릴지</span><button type="button" class="x" data-tog>${open ? "접기" : "펼치기"}</button></div>
+      <div class="sub"${open ? "" : " hidden"}>${hs.map((h) => `<div class="si" data-k="hc1" data-id="${h.id}" data-u="${esc(u)}"><div class="tx" title="${esc(h.statement)}">${esc(h.statement)}</div>
+        ${h.reason ? `<div class="tx q" title="${esc(h.reason)}">${esc(h.reason)}</div>` : ""}
+        <div class="stp"><button type="button" class="st" data-a="promote">지금으로</button><button type="button" class="st dn" data-a="drop">버림</button></div><div data-f></div></div>`).join("")}</div></div>`);
+  });
+  d.rec_noplan.forEach((r) => judge.push(tdItem("rn", r, `<div class="t1">${nmBtn(r)}<span class="tk">${mdOf(r.on_date)} 자리${r.subject ? " · " + esc(r.subject) : ""} — 다음에 볼 것이 비었음</span></div>
+    ${r.target ? `<div class="tx q" title="${esc(r.target)}">${esc(r.target)}</div>` : ""}
+    <form class="nf1" data-a="prescribe" autocomplete="off"><input maxlength="300" placeholder="다음에 볼 것 하나 — 예: 처음 보는 빈칸 2문제를 혼자" aria-label="다음에 볼 것"><button type="submit">정함</button></form>`)));
+  d.rec_unfollowed.forEach((r) => (r.due ? check : wait).push(followHtml(r)));
+  d.checks_due.forEach((c) => check.push(tdItem("ck", c, `<div class="t1">${nmBtn(c)}<span class="tk${c.overdue ? " w" : ""}">며칠 뒤 확인 ${c.round}회째 · ${mdOf(c.due_on)}${c.overdue ? " 지남" : "까지"}</span></div>
+    <div class="tx" title="${esc(c.gap)}">${esc(c.gap)}</div>${c.prescribed ? `<div class="tx q" title="${esc(c.prescribed)}">정한 것: ${esc(c.prescribed)}</div>` : ""}`)));
+  d.preds_open.forEach((p) => (p.due ? check : wait).push(predHtml(p)));
+  const nj = d.hyp_now.length + groups.size + d.rec_noplan.length, nc = check.length;
+  $("#tdl").innerHTML = `<h3>판단할 것 <b>${nj || ""}</b></h3>${judge.join("") || '<div class="none">없어</div>'}
+    <h3>확인할 것 <b>${nc || ""}</b></h3>${check.join("") || '<div class="none">지금은 없어</div>'}
+    ${wait.length ? `<h4>때가 아직인 것 ${wait.length} — 때가 오면 눌러</h4>${wait.join("")}` : ""}`;
+}
+function dropItem(k, id) {
+  const d = T.d; if (!d) return;
+  if (k === "hn") d.hyp_now = d.hyp_now.filter((x) => x.id !== id);
+  if (k === "hc1") d.hyp_cand = d.hyp_cand.filter((x) => x.id !== id);
+  if (k === "rn") d.rec_noplan = d.rec_noplan.filter((x) => x.id !== id);
+  if (k === "rf") d.rec_unfollowed = d.rec_unfollowed.filter((x) => x.id !== id);
+  if (k === "pd") d.preds_open = d.preds_open.filter((x) => x.id !== id);
+}
+function tdFlash(msg) {
+  const el = $("#tdr"); el.textContent = msg; el.classList.add("ok"); clearTimeout(tdFlash.t);
+  tdFlash.t = setTimeout(() => { el.classList.remove("ok"); if (T.d) el.textContent = `오늘 ${mdOf(T.d.today)}`; }, 3000);
+}
+async function tdAct(card, body, done) {
+  card.querySelectorAll("button,input").forEach((b) => (b.disabled = true));
+  card.querySelectorAll(":scope > .er").forEach((x) => x.remove());
+  try {
+    const r = await post(body);
+    dropItem(card.dataset.k, Number(card.dataset.id));
+    tdFlash(typeof done === "function" ? done(r) : done);
+    renderTodo();
+    setTimeout(() => loadTodo().catch(() => {}), 1500);
+  } catch (err) {
+    if (String(err.message) === "auth") return authFail();
+    card.querySelectorAll("button,input").forEach((b) => (b.disabled = false));
+    card.insertAdjacentHTML("beforeend", `<div class="er">안 됐어: ${esc(err.message)}</div>`);
+  }
+}
+function tdAsk(card, ph, required, mk, done) {
+  const slot = card.querySelector(":scope > [data-f]");
+  if (slot.innerHTML) { slot.innerHTML = ""; return; }
+  slot.innerHTML = `<form class="nf1" autocomplete="off"><input maxlength="200" placeholder="${esc(ph)}"><button type="submit">남김</button></form>`;
+  const f = slot.querySelector("form"), inp = f.querySelector("input"); inp.focus();
+  f.addEventListener("submit", (ev) => { ev.preventDefault(); const v = inp.value.trim(); if (required && !v) { inp.focus(); return; } tdAct(card, mk(v), done); });
+}
+$("#tdl").addEventListener("click", (e) => {
+  const op = e.target.closest("[data-open]"); if (op) { openRoom(op.dataset.open); return; }
+  const tg = e.target.closest("[data-tog]");
+  if (tg) { const u = tg.closest(".ti.grp").dataset.u; if (T.openCand.has(u)) T.openCand.delete(u); else T.openCand.add(u); renderTodo(); return; }
+  const btn = e.target.closest("button[data-a]"); if (!btn) return;
+  const card = btn.closest("[data-k][data-id]"); if (!card) return;
+  const id = Number(card.dataset.id), a = btn.dataset.a, v = btn.dataset.v;
+  if (a === "confirm") return tdAct(card, { action: "hyp_confirm", id }, "확정으로 남김");
+  if (a === "promote") return tdAct(card, { action: "hyp_decide", id, status: "지금" }, "지금 짐작으로 올림 — 확정으로 남김");
+  if (a === "drop") return tdAsk(card, "버리는 이유 한 줄 (없으면 그냥 남김)", false, (why) => ({ action: "hyp_decide", id, status: "버림", why: why || undefined }), "버림");
+  if (a === "follow") {
+    if (v === "했다" || v === "모름") return tdAct(card, { action: "record_follow", id, value: v }, `했나: ${v}`);
+    return tdAsk(card, "이유 · 다음 — 예: 시간 없어서 못 함 · 다음 수업 첫 10분에", true, (why) => ({ action: "record_follow", id, value: v, why }), `했나: ${v} — 이유·다음 남김`);
+  }
+  if (a === "pred") return tdAsk(card, "무엇을 보고 — 한 줄 (없으면 그냥 남김)", false, (note) => ({ action: "pred_check", id, outcome: v, note: note || undefined }), `예측: ${v}`);
+});
+$("#tdl").addEventListener("submit", (e) => {
+  const f = e.target.closest("form[data-a='prescribe']"); if (!f) return;
+  e.preventDefault();
+  const card = f.closest("[data-k][data-id]"), inp = f.querySelector("input"), text = inp.value.trim();
+  if (!text) { inp.focus(); return; }
+  tdAct(card, { action: "record_prescribe", id: Number(card.dataset.id), text }, (r) => (r && r.checks ? `정함 — 며칠 뒤 확인 ${r.checks}번이 잡혔어` : "정함"));
+});
+async function loadTodo() {
+  const j = await call({ view: "todo" });
+  T.d = j; T.loadedAt = Date.now();
+  if ($("#tdw").hidden) renderTodoBtn(); else renderTodo();
+}
+const placeTodo = () => { $("#tdw").style.top = $(".bar").offsetHeight + "px"; };
+window.addEventListener("resize", () => { if (!$("#tdw").hidden) placeTodo(); });
+function openTodo() {
+  closeLedger(); placeTodo(); $("#tdw").hidden = false;
+  if (T.d) renderTodo();
+  loadTodo().catch((e) => { if (String(e.message) === "auth") authFail(); else $("#tdl").innerHTML = `<div class="none">할 일을 못 불러왔어: ${esc(e.message)}</div>`; });
+}
+function closeTodo() { $("#tdw").hidden = true; }
+$("#todob").addEventListener("click", () => ($("#tdw").hidden ? openTodo() : closeTodo()));
+$("#tdx").addEventListener("click", closeTodo);
+$("#ldgb").addEventListener("click", () => closeTodo()); // 장부를 열면 할 일은 닫는다 — 한 번에 하나
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#tdw").hidden && $("#lb").hidden) closeTodo(); });
+
 // ---------- 한 방 ----------
 function mergeThread(j, replaceDrafts) {
   (j.messages || []).forEach((m) => S.msgs.set(m.id, m));
@@ -789,6 +962,7 @@ async function refreshAll(quiet) {
     S.lastPoll = new Date().toISOString();
     $("#poll").textContent = `${hm(S.lastPoll)}에 확인`;
     if (Date.now() - L.loadedAt > 5 * 60e3) loadLedger().catch(() => {});
+    if (Date.now() - T.loadedAt > 2 * 60e3) loadTodo().catch(() => {});
   } catch (e) { if (String(e.message) === "auth") return authFail(); if (!quiet) $("#poll").textContent = "확인 실패: " + e.message; }
 }
 $("#refresh").addEventListener("click", () => refreshAll(false));
@@ -808,6 +982,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   $("#logout").hidden = false;
   $("#list").innerHTML = `<div class="loading">불러오는 중…</div>`;
   loadLedger().catch(() => {});
+  loadTodo().catch(() => {});
   try {
     await loadInbox();
     S.lastPoll = new Date().toISOString(); $("#poll").textContent = `${hm(S.lastPoll)}에 확인`;
